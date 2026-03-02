@@ -29,8 +29,16 @@ export function Card({
 }: CardProps) {
     return (
         <div
-            className={cn("relative perspective-1000", className)}
-            style={{ width, height }}
+            className={cn(
+                "relative perspective-1000",
+                "w-[80px] h-[130px] sm:w-[100px] sm:h-[160px] md:w-[150px] md:h-[240px] lg:w-[200px] lg:h-[340px]",
+                className
+            )}
+            style={{
+                // Inline styles act as fallback or default if custom width/height are explicitly passed and not handled by tailwind classes
+                ...(width !== 200 ? { width } : {}),
+                ...(height !== 340 ? { height } : {})
+            }}
             onClick={!disabled ? onClick : undefined}
         >
             <motion.div
@@ -70,7 +78,8 @@ export function Card({
                                 src={frontImage}
                                 alt={name || "Tarot Card"}
                                 fill
-                                className="object-cover"
+                                className="object-contain" // object-cover에서 object-contain으로 변경하여 이미지가 잘리지 않게 함
+
                                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                             />
                         </div>

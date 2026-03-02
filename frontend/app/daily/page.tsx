@@ -4,7 +4,6 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { tarotCards, TarotCard } from "@/data/tarotCards";
 import { Card } from "@/components/tarot/Card";
-import { ShuffleAnimation } from "@/components/tarot/ShuffleAnimation";
 import { shuffleArray } from "@/lib/shuffle";
 import Link from "next/link";
 import { ArrowLeft, RotateCcw } from "lucide-react";
@@ -19,39 +18,15 @@ export default function DailyPage() {
     const [readingResult, setReadingResult] = useState<string>("");
 
     const startShuffle = () => {
-        setStep("shuffling");
-    };
-
-    const handleShuffleComplete = () => {
-        // Shuffle and take top 22 (or just enough for visual spread)
-        // For visual effect, we might show a fan of cards.
-        // Let's just shuffle the whole deck logic-wise, but render a few for picking.
         const shuffled = shuffleArray(tarotCards);
         setCards(shuffled);
         setStep("picking");
     };
 
-    const handleCardPick = async (card: TarotCard) => {
+    const handleCardPick = (card: TarotCard) => {
         setSelectedCard(card);
-        setStep("analyzing");
-
-        try {
-            const response = await fetch("http://localhost:5000/api/tarot/daily", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ card })
-            });
-            const data = await response.json();
-            if (data.reading) {
-                setReadingResult(data.reading);
-            } else {
-                setReadingResult("죄송합니다. 운세를 읽어내지 못했습니다.");
-            }
-        } catch (e) {
-            console.error(e);
-            setReadingResult("네트워크 오류가 발생했습니다.");
-        }
-
+        // API 연동 없이 카드 자체의 설명을 결과에 반영하고 즉시 결과 화면으로 이동
+        setReadingResult(card.desc);
         setStep("result");
         setTimeout(() => setIsFlipped(true), 100);
     };
@@ -102,11 +77,7 @@ export default function DailyPage() {
                     </motion.div>
                 )}
 
-                {step === "shuffling" && (
-                    <motion.div key="shuffling" exit={{ opacity: 0 }}>
-                        <ShuffleAnimation onComplete={handleShuffleComplete} />
-                    </motion.div>
-                )}
+
 
                 {step === "picking" && (
                     <motion.div
@@ -128,7 +99,7 @@ export default function DailyPage() {
                                     className="cursor-pointer hover:-translate-y-2 hover:shadow-lg transition-transform duration-300"
                                     onClick={() => handleCardPick(card)}
                                 >
-                                    <Card id={card.id} width={100} height={160} />
+                                    <Card id={card.id} />
                                 </motion.div>
                             ))}
                         </div>
@@ -136,17 +107,7 @@ export default function DailyPage() {
                     </motion.div>
                 )}
 
-                {step === "analyzing" && (
-                    <motion.div
-                        key="analyzing"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        className="flex flex-col items-center justify-center gap-8 py-20"
-                    >
-                        <div className="animate-spin text-5xl">🔮</div>
-                        <h2 className="text-2xl font-bold">오늘의 기운을 읽고 있습니다...</h2>
-                    </motion.div>
-                )}
+
 
                 {step === "result" && selectedCard && (
                     <motion.div
@@ -161,9 +122,8 @@ export default function DailyPage() {
                                 isFlipped={isFlipped}
                                 frontImage={selectedCard.image}
                                 name={selectedCard.name}
-                                width={280}
-                                height={460}
-                                className="shadow-2xl shadow-primary/30"
+                                className="shadow-2xl shadow-primary/30 w-[180px] h-[300px] md:w-[280px] md:h-[460px] lg:w-[320px] lg:h-[520px]"
+                            // inline size properties are removed in favor of responsive tailwind classes
                             />
                         </div>
 

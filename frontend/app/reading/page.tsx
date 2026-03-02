@@ -4,7 +4,6 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { tarotCards, TarotCard } from "@/data/tarotCards";
 import { Card } from "@/components/tarot/Card";
-import { ShuffleAnimation } from "@/components/tarot/ShuffleAnimation";
 import { shuffleArray } from "@/lib/shuffle";
 import Link from "next/link";
 import { ArrowLeft, Sparkles, Send } from "lucide-react";
@@ -26,10 +25,6 @@ export default function ReadingPage() {
 
     const startReading = () => {
         if (!question.trim()) return;
-        setStep("shuffling");
-    };
-
-    const handleShuffleComplete = () => {
         const shuffled = shuffleArray(tarotCards);
         setCards(shuffled);
         setStep("picking");
@@ -125,11 +120,7 @@ export default function ReadingPage() {
                     </motion.div>
                 )}
 
-                {step === "shuffling" && (
-                    <motion.div key="shuffling" exit={{ opacity: 0 }}>
-                        <ShuffleAnimation onComplete={handleShuffleComplete} />
-                    </motion.div>
-                )}
+
 
                 {step === "picking" && (
                     <motion.div
@@ -163,7 +154,7 @@ export default function ReadingPage() {
                                         style={{ zIndex: index }}
                                         onClick={() => handleCardPick(card)}
                                     >
-                                        <Card id={card.id} width={100} height={170} />
+                                        <Card id={card.id} />
                                     </motion.div>
                                 )
                             })}
@@ -218,8 +209,6 @@ export default function ReadingPage() {
                                         frontImage={card.image}
                                         name={card.name}
                                         isFlipped={true}
-                                        width={180}
-                                        height={300}
                                     />
                                     <div className="text-center">
                                         <h3 className="font-bold text-lg">{card.nameKo}</h3>
