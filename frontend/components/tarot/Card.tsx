@@ -79,7 +79,7 @@ export function Card({
                                 alt={name || "Tarot Card"}
                                 fill
                                 className="object-contain" // object-cover에서 object-contain으로 변경하여 이미지가 잘리지 않게 함
-
+                                priority
                                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                             />
                         </div>

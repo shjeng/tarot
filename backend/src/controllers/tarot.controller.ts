@@ -1,7 +1,25 @@
 import { Request, Response } from 'express';
 import { generateDailyReading, generateSpreadReading } from '../services/gemini.service';
 
-export const getDailyTarot = async (req: Request, res: Response): Promise<void> => {
+interface Card {
+    name: string;
+    nameKo: string;
+    [key: string]: any; // 필요에 따라 추가 속성 정의
+}
+
+interface DailyTarotRequest extends Request {
+    body: {
+        card: Card;
+    }
+}
+
+interface SpreadTarotRequest extends Request {
+    body: {
+        cards: Card[];
+    }
+}
+
+export const getDailyTarot = async (req: DailyTarotRequest, res: Response): Promise<void> => {
     try {
         const { card } = req.body;
 
@@ -18,7 +36,7 @@ export const getDailyTarot = async (req: Request, res: Response): Promise<void> 
     }
 };
 
-export const getSpreadTarot = async (req: Request, res: Response): Promise<void> => {
+export const getSpreadTarot = async (req: SpreadTarotRequest, res: Response): Promise<void> => {
     try {
         const { cards } = req.body;
 

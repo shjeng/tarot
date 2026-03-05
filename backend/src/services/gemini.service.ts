@@ -21,7 +21,7 @@ export const generateDailyReading = async (card: any): Promise<string> => {
         }
 
         const model = genAI.getGenerativeModel({
-            model: 'gemini-1.5-pro', // 또는 gemini-1.5-flash
+            model: 'gemini-2.5-pro', // 또는 gemini-1.5-flash
             systemInstruction
         });
 
@@ -48,7 +48,7 @@ export const generateSpreadReading = async (cards: any[]): Promise<string> => {
         }
 
         const model = genAI.getGenerativeModel({
-            model: 'gemini-1.5-pro',
+            model: 'gemini-2.5-pro',
             systemInstruction
         });
 
