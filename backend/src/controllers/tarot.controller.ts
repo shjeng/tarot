@@ -1,15 +1,9 @@
 import { Request, Response } from 'express';
 import { generateDailyReading, generateSpreadReading, CardInput, SpreadReadingOptions } from '../services/gemini.service';
 
-interface Card {
-    name: string;
-    nameKo: string;
-    [key: string]: any;
-}
-
 interface DailyTarotRequest extends Request {
     body: {
-        card: Card;
+        card: CardInput;
     }
 }
 
@@ -81,7 +75,7 @@ export const getSpreadTarot = async (req: SpreadTarotRequest, res: Response): Pr
         }
 
         // 태어난 시각 형식 검사 (선택)
-        if (birthTime != null && birthTime !== undefined) {
+        if (birthTime != null) {
             const timeRegex = /^\d{2}:\d{2}$/;
             if (!timeRegex.test(birthTime)) {
                 res.status(400).json({ error: '태어난 시각 형식이 올바르지 않습니다.' });
