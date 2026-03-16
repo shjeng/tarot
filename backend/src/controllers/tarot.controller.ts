@@ -30,7 +30,7 @@ export const getDailyTarot = async (req: DailyTarotRequest, res: Response): Prom
         res.json({ reading });
     } catch (error) {
         console.error('Error in getDailyTarot:', error);
-        res.status(500).json({ error: '타로 해석 중 오류가 발생했습니다.' });
+        res.status(500).json({ error: 'AI 응답 생성 실패' });
     }
 };
 
@@ -54,8 +54,12 @@ export const getSpreadTarot = async (req: SpreadTarotRequest, res: Response): Pr
         }
 
         // 질문 검사 (trim 후)
-        if (!question || !question.trim() || question.trim().length > 500) {
+        if (!question || !question.trim()) {
             res.status(400).json({ error: '질문을 입력해주세요.' });
+            return;
+        }
+        if (question.trim().length > 500) {
+            res.status(400).json({ error: '질문은 500자 이내로 입력해주세요.' });
             return;
         }
 
@@ -65,11 +69,21 @@ export const getSpreadTarot = async (req: SpreadTarotRequest, res: Response): Pr
             res.status(400).json({ error: '올바른 생년월일을 입력해주세요.' });
             return;
         }
-        const birthDateObj = new Date(birthDate);
-        const minDate = new Date('1900-01-01');
-        const today = new Date();
-        today.setUTCHours(23, 59, 59, 999); // 오늘 하루 전체 허용
-        if (isNaN(birthDateObj.getTime()) || birthDateObj < minDate || birthDateObj > today) {
+        const [byear, bmonth, bday] = birthDate.split('-').map(Number);
+        // 실제 달력 유효성 검사 (예: 2월 30일 거부)
+        const dateCheck = new Date(Date.UTC(byear, bmonth - 1, bday));
+        if (
+            dateCheck.getUTCFullYear() !== byear ||
+            dateCheck.getUTCMonth() !== bmonth - 1 ||
+            dateCheck.getUTCDate() !== bday
+        ) {
+            res.status(400).json({ error: '올바른 생년월일을 입력해주세요.' });
+            return;
+        }
+        const minDate = new Date(Date.UTC(1900, 0, 1));
+        const todayUTC = new Date();
+        const todayEnd = new Date(Date.UTC(todayUTC.getUTCFullYear(), todayUTC.getUTCMonth(), todayUTC.getUTCDate(), 23, 59, 59, 999));
+        if (dateCheck < minDate || dateCheck > todayEnd) {
             res.status(400).json({ error: '올바른 생년월일을 입력해주세요.' });
             return;
         }

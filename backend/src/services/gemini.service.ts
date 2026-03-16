@@ -18,7 +18,7 @@ export interface SpreadReadingOptions {
     cards: CardInput[];
     question: string;
     birthDate: string;
-    birthTime: string | null | undefined;
+    birthTime: string | null;
     gender: 'male' | 'female' | 'other';
 }
 
@@ -42,6 +42,10 @@ const birthTimeToKorean = (birthTime: string | null | undefined): string => {
     return `오후 ${displayHour}시 ${mm}분`;
 };
 
+const sanitizeForPrompt = (value: string): string => {
+    return value.replace(/[\[\]\n\r]/g, ' ').trim();
+};
+
 // 타로 리더로서의 기본 컨텍스트 부여
 const dailySystemInstruction = `
 당신은 신비롭고 지혜로운 타로 리더입니다.
@@ -57,14 +61,14 @@ const spreadSystemInstruction = `
 희망적이고 건설적인 방향으로 해석해주세요.
 `;
 
-export const generateDailyReading = async (card: any): Promise<string> => {
+export const generateDailyReading = async (card: CardInput): Promise<string> => {
     try {
         if (!apiKey || apiKey === 'your_gemini_api_key_here') {
             return `[API KEY 미설정 상태]\n"${card.nameKo}" 카드를 뽑으셨군요. 이 카드는 "${card.meaningUpright}"의 의미를 담고 있습니다.\n(실제 AI 해석을 보려면 백엔드 .env 파일에 GEMINI_API_KEY를 설정해주세요.)`;
         }
 
         const model = genAI.getGenerativeModel({
-            model: 'gemini-2.5-pro', // 또는 gemini-1.5-flash
+            model: 'gemini-2.5-pro',
             systemInstruction: dailySystemInstruction
         });
 
@@ -86,16 +90,22 @@ export const generateDailyReading = async (card: any): Promise<string> => {
 
 export const generateSpreadReading = async (options: SpreadReadingOptions): Promise<string> => {
     const { cards, question, birthDate, birthTime, gender } = options;
-
-    const genderKo = genderToKorean(gender);
-    const birthDateKo = birthDateToKorean(birthDate);
-    const birthTimeKo = birthTimeToKorean(birthTime);
-
-    if (!apiKey || apiKey === 'your_gemini_api_key_here') {
-        return `[API KEY 미설정 상태]\n의뢰인: ${birthDateKo} / ${genderKo} / 태어난 시각: ${birthTimeKo}\n질문: ${question}\n과거: ${cards[0].nameKo}, 현재: ${cards[1].nameKo}, 미래: ${cards[2].nameKo}\n(실제 AI 해석을 보려면 백엔드 .env 파일에 GEMINI_API_KEY를 설정해주세요.)`;
-    }
-
     try {
+        const genderKo = genderToKorean(gender);
+        const birthDateKo = birthDateToKorean(birthDate);
+        const birthTimeKo = birthTimeToKorean(birthTime);
+        const safeQuestion = sanitizeForPrompt(question);
+        const safeCard0 = sanitizeForPrompt(cards[0].meaningUpright);
+        const safeCard1 = sanitizeForPrompt(cards[1].meaningUpright);
+        const safeCard2 = sanitizeForPrompt(cards[2].meaningUpright);
+        const safeCard0Name = sanitizeForPrompt(cards[0].nameKo);
+        const safeCard1Name = sanitizeForPrompt(cards[1].nameKo);
+        const safeCard2Name = sanitizeForPrompt(cards[2].nameKo);
+
+        if (!apiKey || apiKey === 'your_gemini_api_key_here') {
+            return `[API KEY 미설정 상태]\n의뢰인: ${birthDateKo} / ${genderKo} / 태어난 시각: ${birthTimeKo}\n질문: ${safeQuestion}\n과거: ${safeCard0Name}, 현재: ${safeCard1Name}, 미래: ${safeCard2Name}\n(실제 AI 해석을 보려면 백엔드 .env 파일에 GEMINI_API_KEY를 설정해주세요.)`;
+        }
+
         const model = genAI.getGenerativeModel({
             model: 'gemini-2.5-pro',
             systemInstruction: spreadSystemInstruction
@@ -107,12 +117,12 @@ export const generateSpreadReading = async (options: SpreadReadingOptions): Prom
 - 태어난 시각: ${birthTimeKo}
 
 [질문]
-${question}
+${safeQuestion}
 
 [뽑은 카드]
-1. 과거 (배경): [${cards[0].nameKo}] — 키워드: ${cards[0].meaningUpright}
-2. 현재 (상황): [${cards[1].nameKo}] — 키워드: ${cards[1].meaningUpright}
-3. 미래 (결과/조언): [${cards[2].nameKo}] — 키워드: ${cards[2].meaningUpright}
+1. 과거 (배경): [${safeCard0Name}] — 키워드: ${safeCard0}
+2. 현재 (상황): [${safeCard1Name}] — 키워드: ${safeCard1}
+3. 미래 (결과/조언): [${safeCard2Name}] — 키워드: ${safeCard2}
 
 사주의 기운과 세 장의 카드를 유기적으로 연결하여, 질문에 대한 종합적인 사주타로 리딩을 4~5문단으로 작성해주세요.
 `;
