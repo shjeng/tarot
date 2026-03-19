@@ -19,12 +19,15 @@ type Step = "input" | "shuffling" | "picking" | "analyzing" | "result";
 export default function ReadingPage() {
     const [step, setStep] = useState<Step>("input");
     const [question, setQuestion] = useState("");
+    const [birthDate, setBirthDate] = useState("");
+    const [birthTime, setBirthTime] = useState("");
+    const [gender, setGender] = useState<"male" | "female" | "other" | "">("");
     const [cards, setCards] = useState<TarotCard[]>([]);
     const [selectedCards, setSelectedCards] = useState<TarotCard[]>([]);
     const [readingResult, setReadingResult] = useState<string>("");
 
     const startReading = () => {
-        if (!question.trim()) return;
+        if (!question.trim() || !birthDate || !gender) return;
         const shuffled = shuffleArray(tarotCards);
         setCards(shuffled);
         setStep("picking");
@@ -49,7 +52,10 @@ export default function ReadingPage() {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     cards: pickedCards,
-                    question: question
+                    question: question,
+                    birthDate: birthDate,
+                    birthTime: birthTime || null,
+                    gender: gender
                 })
             });
 
@@ -101,6 +107,47 @@ export default function ReadingPage() {
                             예: &quot;이직을 하는 것이 좋을까요?&quot;, &quot;그 사람의 속마음이 궁금해요.&quot;
                         </p>
 
+                        {/* 사주 정보 입력 */}
+                        <div className="w-full flex flex-col gap-4">
+                            <div className="flex flex-col gap-1">
+                                <label className="text-sm text-muted-foreground font-medium">생년월일 <span className="text-accent">*</span></label>
+                                <input
+                                    type="date"
+                                    value={birthDate}
+                                    onChange={(e) => setBirthDate(e.target.value)}
+                                    max={new Date().toISOString().split("T")[0]}
+                                    min="1900-01-01"
+                                    className="w-full p-4 rounded-xl bg-secondary/5 border border-primary/20 focus:border-accent focus:ring-1 focus:ring-accent outline-none text-base transition-all"
+                                />
+                            </div>
+
+                            <div className="flex flex-col gap-1">
+                                <label className="text-sm text-muted-foreground font-medium">태어난 시각 <span className="text-muted-foreground/60">(선택)</span></label>
+                                <input
+                                    type="time"
+                                    value={birthTime}
+                                    onChange={(e) => setBirthTime(e.target.value)}
+                                    className="w-full p-4 rounded-xl bg-secondary/5 border border-primary/20 focus:border-accent focus:ring-1 focus:ring-accent outline-none text-base transition-all"
+                                />
+                            </div>
+
+                            <div className="flex flex-col gap-2">
+                                <label className="text-sm text-muted-foreground font-medium">성별 <span className="text-accent">*</span></label>
+                                <div className="flex gap-3">
+                                    {([["male", "남성"], ["female", "여성"], ["other", "기타"]] as const).map(([val, label]) => (
+                                        <button
+                                            key={val}
+                                            type="button"
+                                            onClick={() => setGender(val)}
+                                            className={`flex-1 py-3 rounded-xl border text-sm font-medium transition-all ${gender === val ? "border-accent bg-accent/20 text-accent" : "border-primary/20 bg-secondary/5 text-muted-foreground hover:border-accent/50"}`}
+                                        >
+                                            {label}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+
                         <div className="w-full relative">
                             <textarea
                                 value={question}
@@ -112,7 +159,7 @@ export default function ReadingPage() {
 
                         <button
                             onClick={startReading}
-                            disabled={!question.trim()}
+                            disabled={!question.trim() || !birthDate || !gender}
                             className="flex items-center gap-2 px-10 py-4 rounded-full bg-accent text-accent-foreground font-bold text-lg hover:bg-accent/90 transition-all shadow-lg hover:shadow-accent/40 disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105 active:scale-95"
                         >
                             <Send className="w-5 h-5" /> 상담 시작하기
@@ -128,49 +175,116 @@ export default function ReadingPage() {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className="flex flex-col items-center gap-8 w-full"
+                        className="flex flex-col items-center gap-10 w-full max-w-xl px-6"
                     >
-                        <div className="text-center">
-                            <h2 className="text-2xl font-bold animate-pulse">
-                                {selectedCards.length === 0 && "과거: 첫 번째 카드를 선택하세요"}
-                                {selectedCards.length === 1 && "현재: 두 번째 카드를 선택하세요"}
-                                {selectedCards.length === 2 && "미래: 마지막 카드를 선택하세요"}
+                        {/* 안내 텍스트 */}
+                        <div className="text-center space-y-1.5">
+                            <p className="text-[10px] tracking-[0.35em] text-white/25 uppercase">
+                                {selectedCards.length} / 3
+                            </p>
+                            <h2 className="text-lg font-light tracking-wide text-white/75">
+                                {[
+                                    '과거를 나타내는 카드를 고르세요',
+                                    '현재를 나타내는 카드를 고르세요',
+                                    '미래를 나타내는 카드를 고르세요',
+                                ][selectedCards.length]}
                             </h2>
-                            <p className="text-muted-foreground mt-2">{selectedCards.length} / 3 장 선택됨</p>
                         </div>
 
-                        <div className="flex flex-wrap justify-center gap-[-5rem] max-w-6xl overflow-hidden py-12 px-4 perspective-1000">
-                            {cards.slice(0, 15).map((card, index) => {
-                                const isSelected = selectedCards.find(c => c.id === card.id);
-                                if (isSelected) return null; // Hide picked cards from deck
-
+                        {/* 선택 슬롯 */}
+                        <div className="flex gap-5 justify-center">
+                            {[
+                                { en: 'PAST', ko: '과거' },
+                                { en: 'PRESENT', ko: '현재' },
+                                { en: 'FUTURE', ko: '미래' },
+                            ].map(({ en, ko }, i) => {
+                                const filled = i < selectedCards.length;
+                                const active = i === selectedCards.length;
                                 return (
-                                    <motion.div
-                                        key={card.id}
-                                        initial={{ opacity: 0, x: -50, rotate: -5 }}
-                                        animate={{ opacity: 1, x: 0, rotate: (index - 7) * 3 }}
-                                        transition={{ delay: index * 0.05 }}
-                                        className="relative -ml-16 first:ml-0 cursor-pointer hover:-translate-y-6 hover:z-20 transition-transform duration-300"
-                                        style={{ zIndex: index }}
-                                        onClick={() => handleCardPick(card)}
-                                    >
-                                        <Card id={card.id} />
-                                    </motion.div>
-                                )
+                                    <div key={i} className="flex flex-col items-center gap-2.5">
+                                        <motion.div
+                                            className={`w-[66px] h-[105px] rounded-md border flex items-center justify-center transition-all duration-500 ${
+                                                filled
+                                                    ? 'border-violet-400/40 bg-violet-950/30 shadow-[0_0_20px_rgba(139,92,246,0.12)]'
+                                                    : active
+                                                    ? 'border-white/18 bg-white/[0.025]'
+                                                    : 'border-white/6 bg-transparent'
+                                            }`}
+                                        >
+                                            {filled ? (
+                                                <motion.div
+                                                    initial={{ opacity: 0, scale: 0.6 }}
+                                                    animate={{ opacity: 1, scale: 1 }}
+                                                    transition={{ type: 'spring', stiffness: 320, damping: 22 }}
+                                                    className="text-center px-1.5"
+                                                >
+                                                    <p className="text-violet-300 text-base mb-1">✦</p>
+                                                    <p className="text-[9px] leading-tight text-violet-200/60 font-medium">
+                                                        {selectedCards[i].nameKo}
+                                                    </p>
+                                                </motion.div>
+                                            ) : active ? (
+                                                <motion.span
+                                                    animate={{ opacity: [0.15, 0.5, 0.15] }}
+                                                    transition={{ duration: 2.8, repeat: Infinity, ease: 'easeInOut' }}
+                                                    className="text-white/40 text-lg"
+                                                >✦</motion.span>
+                                            ) : null}
+                                        </motion.div>
+                                        <div className="text-center space-y-0.5">
+                                            <p className={`text-[8px] tracking-[0.25em] font-semibold transition-colors duration-400 ${
+                                                filled ? 'text-violet-400/80' : active ? 'text-white/25' : 'text-white/10'
+                                            }`}>{en}</p>
+                                            <p className={`text-[11px] transition-colors duration-400 ${
+                                                filled ? 'text-white/45' : active ? 'text-white/20' : 'text-white/10'
+                                            }`}>{ko}</p>
+                                        </div>
+                                    </div>
+                                );
                             })}
                         </div>
 
-                        {/* Display selected cards placeholder */}
-                        <div className="flex gap-4 mt-8">
-                            {[0, 1, 2].map((i) => (
-                                <div key={i} className={`w-24 h-40 rounded-lg border-2 border-dashed flex items-center justify-center transition-colors ${i < selectedCards.length ? 'border-accent bg-accent/20' : 'border-slate-700'}`}>
-                                    {i < selectedCards.length ? (
-                                        <span className="text-2xl">🎴</span>
-                                    ) : (
-                                        <span className="text-slate-700 text-sm">{['과거', '현재', '미래'][i]}</span>
-                                    )}
-                                </div>
-                            ))}
+                        {/* 구분선 */}
+                        <div className="w-full flex items-center gap-4">
+                            <div className="flex-1 h-px bg-white/6" />
+                            <span className="text-[9px] tracking-[0.3em] text-white/15 uppercase">deck</span>
+                            <div className="flex-1 h-px bg-white/6" />
+                        </div>
+
+                        {/* 카드 그리드 */}
+                        <div className="grid grid-cols-7 gap-2 w-full">
+                            {cards.map((card, index) => {
+                                const isSelected = !!selectedCards.find(c => c.id === card.id);
+                                return (
+                                    <motion.button
+                                        key={card.id}
+                                        initial={{ opacity: 0, y: 14 }}
+                                        animate={{
+                                            opacity: isSelected ? 0 : 1,
+                                            y: 0,
+                                            scale: isSelected ? 0.75 : 1,
+                                            pointerEvents: isSelected ? 'none' : 'auto',
+                                        }}
+                                        whileHover={!isSelected ? { y: -10, scale: 1.06 } : {}}
+                                        transition={{
+                                            delay: isSelected ? 0 : index * 0.028,
+                                            type: 'spring',
+                                            stiffness: 260,
+                                            damping: 22,
+                                        }}
+                                        onClick={() => !isSelected && handleCardPick(card)}
+                                        disabled={isSelected}
+                                        className="relative group focus:outline-none"
+                                    >
+                                        {/* 글로우 */}
+                                        <div className="absolute -inset-1.5 rounded-lg bg-violet-500/0 group-hover:bg-violet-500/12 blur-xl transition-all duration-400 pointer-events-none" />
+                                        {/* 카드 */}
+                                        <div className="relative w-full aspect-[5/8] rounded-[5px] border border-white/[0.07] group-hover:border-violet-400/35 bg-gradient-to-b from-[#14092b] to-[#0a0618] flex items-center justify-center transition-all duration-300 group-hover:shadow-[0_4px_20px_rgba(139,92,246,0.15)]">
+                                            <span className="text-white/[0.07] group-hover:text-violet-300/45 text-xs transition-all duration-300">✦</span>
+                                        </div>
+                                    </motion.button>
+                                );
+                            })}
                         </div>
                     </motion.div>
                 )}
