@@ -68,7 +68,7 @@ export const generateDailyReading = async (card: CardInput): Promise<string> => 
         }
 
         const model = genAI.getGenerativeModel({
-            model: 'gemini-2.5-pro',
+            model: 'gemini-2.5-flash-lite',
             systemInstruction: dailySystemInstruction
         });
 
@@ -107,7 +107,7 @@ export const generateSpreadReading = async (options: SpreadReadingOptions): Prom
         }
 
         const model = genAI.getGenerativeModel({
-            model: 'gemini-2.5-pro',
+            model: 'gemini-2.5-flash-lite',
             systemInstruction: spreadSystemInstruction
         });
 
