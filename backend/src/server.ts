@@ -1,11 +1,21 @@
 import dotenv from 'dotenv';
-// 환경 변수부터 먼저 로드한 뒤 앱을 가져옵니다.
 dotenv.config();
 
 import app from './app';
+import { logger } from './logger/logger';
 
 const PORT = process.env.PORT || 5000;
 
+process.on('uncaughtException', (err) => {
+    logger.error('uncaughtException', { error: { message: err.message, stack: err.stack } });
+    process.exit(1);
+});
+
+process.on('unhandledRejection', (reason) => {
+    const err = reason instanceof Error ? reason : new Error(String(reason));
+    logger.error('unhandledRejection', { error: { message: err.message, stack: err.stack } });
+});
+
 app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+    logger.info(`server started on port ${PORT}`);
 });

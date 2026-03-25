@@ -1,8 +1,8 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
-
-// 환경변수 로딩 확인 (안전장치)
 import dotenv from 'dotenv';
 dotenv.config();
+
+import { logger } from '../logger/logger';
 
 const apiKey = process.env.GEMINI_API_KEY || '';
 const genAI = new GoogleGenerativeAI(apiKey);
@@ -11,6 +11,7 @@ export interface CardInput {
     name: string;
     nameKo: string;
     meaningUpright: string;
+    desc?: string;
     [key: string]: any;
 }
 
@@ -46,7 +47,6 @@ const sanitizeForPrompt = (value: string): string => {
     return value.replace(/[\[\]\n\r]/g, ' ').trim();
 };
 
-// 타로 리더로서의 기본 컨텍스트 부여
 const dailySystemInstruction = `
 당신은 신비롭고 지혜로운 타로 리더입니다.
 사용자가 뽑은 타로 카드를 바탕으로, 따뜻하면서도 통찰력 있는 조언을 한국어로 존댓말을 사용하여 제공해주세요.
@@ -70,7 +70,7 @@ export const generateDailyReading = async (card: CardInput): Promise<string> => 
 
         const model = genAI.getGenerativeModel({
             model: 'gemini-2.5-flash-lite',
-            systemInstruction: dailySystemInstruction
+            systemInstruction: dailySystemInstruction,
         });
 
         const prompt = `
@@ -80,11 +80,31 @@ export const generateDailyReading = async (card: CardInput): Promise<string> => 
 이 카드가 오늘 하루 사용자에게 어떤 의미와 조언을 주는지 3~4문단 정도로 자연스럽게 해석해주세요.
 `;
 
+        const start = Date.now();
         const result = await model.generateContent(prompt);
-        const response = result.response;
-        return response.text();
+        const durationMs = Date.now() - start;
+        const text = result.response.text();
+        const usage = result.response.usageMetadata;
+
+        logger.info('gemini api call completed', {
+            gemini: {
+                model: 'gemini-2.5-flash-lite',
+                type: 'daily',
+                promptLength: prompt.length,
+                responseLength: text.length,
+                promptTokens: usage?.promptTokenCount ?? null,
+                candidateTokens: usage?.candidatesTokenCount ?? null,
+                durationMs,
+            },
+        });
+
+        return text;
     } catch (error) {
-        console.error('Gemini API Error (Daily):', error);
+        const err = error instanceof Error ? error : new Error(String(error));
+        logger.error('gemini api call failed', {
+            gemini: { model: 'gemini-2.5-flash-lite', type: 'daily' },
+            error: { message: err.message, stack: err.stack },
+        });
         throw new Error('AI 응답 생성 실패');
     }
 };
@@ -109,7 +129,7 @@ export const generateSpreadReading = async (options: SpreadReadingOptions): Prom
 
         const model = genAI.getGenerativeModel({
             model: 'gemini-2.5-flash-lite',
-            systemInstruction: spreadSystemInstruction
+            systemInstruction: spreadSystemInstruction,
         });
 
         const prompt = `
@@ -142,10 +162,31 @@ ${safeQuestion}
 위 헤더 문구(## 🔮 과거 — ..., ## 🌿 현재 — ..., ## ✨ 미래 — ..., ## 📝 종합 요약)는 반드시 그대로 사용해주세요.
 `;
 
+        const start = Date.now();
         const result = await model.generateContent(prompt);
-        return result.response.text();
+        const durationMs = Date.now() - start;
+        const text = result.response.text();
+        const usage = result.response.usageMetadata;
+
+        logger.info('gemini api call completed', {
+            gemini: {
+                model: 'gemini-2.5-flash-lite',
+                type: 'spread',
+                promptLength: prompt.length,
+                responseLength: text.length,
+                promptTokens: usage?.promptTokenCount ?? null,
+                candidateTokens: usage?.candidatesTokenCount ?? null,
+                durationMs,
+            },
+        });
+
+        return text;
     } catch (error) {
-        console.error('Gemini API Error (Spread):', error);
+        const err = error instanceof Error ? error : new Error(String(error));
+        logger.error('gemini api call failed', {
+            gemini: { model: 'gemini-2.5-flash-lite', type: 'spread' },
+            error: { message: err.message, stack: err.stack },
+        });
         throw new Error('AI 응답 생성 실패');
     }
 };

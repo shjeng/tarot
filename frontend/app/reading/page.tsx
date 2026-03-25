@@ -19,7 +19,7 @@ type Step = "input" | "shuffling" | "picking" | "analyzing" | "result";
 export default function ReadingPage() {
     const [step, setStep] = useState<Step>("input");
     const [question, setQuestion] = useState("");
-    const [birthDate, setBirthDate] = useState("");
+    const [birthDate, setBirthDate] = useState("2000-01-01");
     const [birthTime, setBirthTime] = useState("");
     const [gender, setGender] = useState<"male" | "female" | "other" | "">("");
     const [cards, setCards] = useState<TarotCard[]>([]);
