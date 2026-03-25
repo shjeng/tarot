@@ -11,9 +11,12 @@
   --color-secondary-foreground: var(--secondary-foreground);
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
+  --color-muted-foreground: var(--muted-foreground);
 
-  --font-sans: var(--font-geist-sans);
+  --font-sans: var(--font-nanum-gothic);
   --font-mono: var(--font-geist-mono);
+  --color-border: var(--border);
+  --font-serif: var(--font-noto-serif-kr);
 
   --animate-accordion-down: accordion-down 0.2s ease-out;
   --animate-accordion-up: accordion-up 0.2s ease-out;
@@ -44,42 +47,38 @@
   Base: Dark, Deep Purple, Gold Accents
 */
 :root {
-  /* Light mode (default, but we will force dark or extensive dark usage) */
-  --background: #fdfbf7;
-  /* Warm white */
-  --foreground: #1a1a1a;
+  --background: #f5f3ee;
+  --foreground: #1a1f3a;
+  --muted-foreground: #5a6480;
 
-  --primary: #6b21a8;
-  /* Purple 700 */
-  --primary-foreground: #faf5ff;
+  --primary: #3a5080;
+  --primary-foreground: #f5f3ee;
 
-  --secondary: #fef08a;
-  /* Yellow 200 (Gold-ish) */
-  --secondary-foreground: #422006;
+  --secondary: #c8a96e;
+  --secondary-foreground: #1a1f3a;
 
-  --accent: #a855f7;
-  /* Purple 500 */
+  --accent: #6b8ab5;
   --accent-foreground: #ffffff;
+
+  --border: #b8c0d8;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0f0a1e;
-    /* Very dark purple/black */
-    --foreground: #e9d5ff;
-    /* Light purple text */
+    --background: #0a0f2e;
+    --foreground: #e2e8f4;
+    --muted-foreground: #8896b8;
 
-    --primary: #9333ea;
-    /* Purple 600 */
+    --primary: #7a9cc0;
     --primary-foreground: #ffffff;
 
-    --secondary: #ffd700;
-    /* Gold */
-    --secondary-foreground: #000000;
+    --secondary: #e8d5a3;
+    --secondary-foreground: #0a0f2e;
 
-    --accent: #d8b4fe;
-    /* Purple 300 */
-    --accent-foreground: #1e1b4b;
+    --accent: #9ab5d4;
+    --accent-foreground: #0a0f2e;
+
+    --border: #2a3a6e;
   }
 }
 

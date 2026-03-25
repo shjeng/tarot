@@ -49,7 +49,7 @@ export function Card({
             >
                 {/* Card Back (Mystical Design) */}
                 <div
-                    className="absolute inset-0 backface-hidden rounded-xl border-2 border-secondary/30 bg-gradient-to-br from-indigo-950 via-purple-900 to-slate-900 flex items-center justify-center overflow-hidden"
+                    className="absolute inset-0 backface-hidden rounded-xl border-2 border-secondary/30 bg-gradient-to-br from-[#060b22] via-[#0a0f2e] to-[#0d1535] flex items-center justify-center overflow-hidden"
                     style={{ backfaceVisibility: "hidden" }}
                 >
                     {/* Decorative Pattern (CSS only for now) */}
@@ -59,7 +59,7 @@ export function Card({
                         <div className="w-10 h-10 rotate-45 border border-secondary/30" />
                     </div>
                     <div className="absolute bottom-4 text-secondary/40 text-xs tracking-[0.2em] font-serif">
-                        MYSTIC
+                        고양이 점술관
                     </div>
                 </div>
 

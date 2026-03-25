@@ -6,7 +6,7 @@ import { tarotCards, TarotCard } from "@/data/tarotCards";
 import { Card } from "@/components/tarot/Card";
 import { shuffleArray } from "@/lib/shuffle";
 import Link from "next/link";
-import { ArrowLeft, RotateCcw } from "lucide-react";
+import { ArrowLeft, RotateCcw, Moon } from "lucide-react";
 
 type Step = "intro" | "shuffling" | "picking" | "analyzing" | "result";
 
@@ -60,7 +60,7 @@ export default function DailyPage() {
                         className="flex flex-col items-center text-center gap-6"
                     >
                         <div className="p-8 rounded-full bg-primary/10 mb-4">
-                            <div className="text-6xl">🔮</div>
+                            <Moon className="w-16 h-16 text-primary" />
                         </div>
                         <h2 className="text-3xl font-bold">오늘 하루를 위한 조언</h2>
                         <p className="text-muted-foreground max-w-md break-keep">

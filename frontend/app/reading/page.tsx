@@ -6,7 +6,7 @@ import { tarotCards, TarotCard } from "@/data/tarotCards";
 import { Card } from "@/components/tarot/Card";
 import { shuffleArray } from "@/lib/shuffle";
 import Link from "next/link";
-import { ArrowLeft, Sparkles, Send } from "lucide-react";
+import { ArrowLeft, Star, Send } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 
 // Define reading state in a context or pass via query/state manager in a real app. 
@@ -84,7 +84,7 @@ export default function ReadingPage() {
                     <ArrowLeft className="mr-2 h-4 w-4" /> 홈으로
                 </Link>
                 <div className="flex items-center gap-2">
-                    <Sparkles className="w-5 h-5 text-accent" />
+                    <Star className="w-5 h-5 text-accent" />
                     <h1 className="text-2xl font-bold bg-gradient-to-r from-accent to-purple-400 bg-clip-text text-transparent">
                         AI 타로 상담
                     </h1>
@@ -334,7 +334,7 @@ export default function ReadingPage() {
 
                         <div className="bg-secondary/5 rounded-3xl p-8 border border-secondary/20 shadow-xl">
                             <h3 className="text-2xl font-bold mb-6 flex items-center gap-2">
-                                <Sparkles className="text-accent" />
+                                <Star className="text-accent" />
                                 AI 분석 결과
                             </h3>
                             <div className="prose prose-invert max-w-none prose-p:leading-relaxed prose-headings:text-primary-foreground text-gray-300">
