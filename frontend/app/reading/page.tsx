@@ -85,7 +85,7 @@ export default function ReadingPage() {
                 </Link>
                 <div className="flex items-center gap-2">
                     <Star className="w-5 h-5 text-accent" />
-                    <h1 className="text-2xl font-bold bg-gradient-to-r from-accent to-purple-400 bg-clip-text text-transparent">
+                    <h1 className="text-2xl font-bold bg-gradient-to-r from-secondary to-accent bg-clip-text text-transparent">
                         AI 타로 상담
                     </h1>
                 </div>
@@ -117,7 +117,7 @@ export default function ReadingPage() {
                                     onChange={(e) => setBirthDate(e.target.value)}
                                     max={new Date().toISOString().split("T")[0]}
                                     min="1900-01-01"
-                                    className="w-full p-4 rounded-xl bg-secondary/5 border border-primary/20 focus:border-accent focus:ring-1 focus:ring-accent outline-none text-base transition-all"
+                                    className="w-full p-4 rounded-xl bg-secondary/5 border border-primary/20 focus:border-accent focus:ring-1 focus:ring-accent outline-none text-base text-foreground transition-all"
                                 />
                             </div>
 
@@ -127,7 +127,7 @@ export default function ReadingPage() {
                                     type="time"
                                     value={birthTime}
                                     onChange={(e) => setBirthTime(e.target.value)}
-                                    className="w-full p-4 rounded-xl bg-secondary/5 border border-primary/20 focus:border-accent focus:ring-1 focus:ring-accent outline-none text-base transition-all"
+                                    className="w-full p-4 rounded-xl bg-secondary/5 border border-primary/20 focus:border-accent focus:ring-1 focus:ring-accent outline-none text-base text-foreground transition-all"
                                 />
                             </div>
 
@@ -153,7 +153,7 @@ export default function ReadingPage() {
                                 value={question}
                                 onChange={(e) => setQuestion(e.target.value)}
                                 placeholder="고민을 적어주세요..."
-                                className="w-full p-6 rounded-2xl bg-secondary/5 border border-primary/20 focus:border-accent focus:ring-1 focus:ring-accent outline-none min-h-[150px] resize-none text-lg transition-all"
+                                className="w-full p-6 rounded-2xl bg-secondary/5 border border-primary/20 focus:border-accent focus:ring-1 focus:ring-accent outline-none min-h-[150px] resize-none text-lg text-foreground placeholder:text-muted-foreground transition-all"
                             />
                         </div>
 

@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!-- Background -->
+  <rect width="32" height="32" rx="7" fill="#0f1640"/>
+  <!-- Left ear -->
+  <polygon points="4,16 8,4 14,13" fill="#e8d5a3"/>
+  <!-- Right ear -->
+  <polygon points="18,13 24,4 28,16" fill="#e8d5a3"/>
+  <!-- Head -->
+  <circle cx="16" cy="20" r="10" fill="#e8d5a3"/>
+  <!-- Left eye -->
+  <ellipse cx="12" cy="19.5" rx="1.8" ry="2.5" fill="#2a3a6e"/>
+  <!-- Right eye -->
+  <ellipse cx="20" cy="19.5" rx="1.8" ry="2.5" fill="#2a3a6e"/>
+  <!-- Nose -->
+  <ellipse cx="16" cy="23.5" rx="1.2" ry="0.8" fill="#c8a96e"/>
+</svg>
