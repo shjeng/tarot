@@ -28,10 +28,15 @@ const contextFormat = winston.format((info) => {
     return info;
 });
 
+const kstTimestamp = () =>
+    new Date(Date.now() + 9 * 60 * 60 * 1000).toISOString().replace('Z', '+09:00');
+
 const jsonFormat = winston.format.combine(
     contextFormat(),
-    winston.format.timestamp(),
-    winston.format.json()
+    winston.format.printf((info) => {
+        const { level, message, requestId, ip, ...rest } = info;
+        return JSON.stringify({ timestamp: kstTimestamp(), level, message, requestId, ip, ...rest });
+    })
 );
 
 const consoleFormat = winston.format.combine(
