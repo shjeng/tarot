@@ -67,7 +67,7 @@ export default function ReadingPage() {
                 // Handle error (mock for now or alert)
                 // Ensure to handle API failures gracefully
                 console.error("API Error", data);
-                setReadingResult("죄송합니다. AI가 운세를 읽어내지 못했습니다. 다시 시도해주세요.");
+                setReadingResult("이런... 냥이가 이번엔 읽어내지 못했다냥. 다시 시도해 주세요.");
                 setStep("result");
             }
         } catch (e) {
@@ -86,7 +86,7 @@ export default function ReadingPage() {
                 <div className="flex items-center gap-2">
                     <Star className="w-5 h-5 text-accent" />
                     <h1 className="text-2xl font-bold bg-gradient-to-r from-secondary to-accent bg-clip-text text-transparent">
-                        AI 타로 상담
+                        고양이 타로 상담
                     </h1>
                 </div>
                 <div className="w-20" /> {/* Spacer */}
@@ -101,9 +101,9 @@ export default function ReadingPage() {
                         exit={{ opacity: 0, y: -20 }}
                         className="flex flex-col items-center text-center gap-8 max-w-lg w-full px-4"
                     >
-                        <h2 className="text-3xl font-bold">무엇이 고민이신가요?</h2>
+                        <h2 className="text-3xl font-bold">어떤 고민을 가져왔냥?</h2>
                         <p className="text-muted-foreground break-keep">
-                            구체적으로 질문할수록 더 정확한 답변을 얻을 수 있습니다. <br />
+                            구체적으로 적을수록 냥이가 더 잘 읽어줄 수 있다냥. <br />
                             예: &quot;이직을 하는 것이 좋을까요?&quot;, &quot;그 사람의 속마음이 궁금해요.&quot;
                         </p>
 
@@ -152,7 +152,7 @@ export default function ReadingPage() {
                             <textarea
                                 value={question}
                                 onChange={(e) => setQuestion(e.target.value)}
-                                placeholder="고민을 적어주세요..."
+                                placeholder="고민을 알려달라 냥.."
                                 className="w-full p-6 rounded-2xl bg-secondary/5 border border-primary/20 focus:border-accent focus:ring-1 focus:ring-accent outline-none min-h-[150px] resize-none text-lg text-foreground placeholder:text-muted-foreground transition-all"
                             />
                         </div>
@@ -302,10 +302,10 @@ export default function ReadingPage() {
                             <div className="absolute inset-0 flex items-center justify-center text-4xl">✨</div>
                         </div>
                         <h2 className="text-2xl font-bold text-center">
-                            AI가 카드를 읽고 있습니다...
+                            냥이가 카드를 읽고 있다냥...
                         </h2>
                         <p className="text-muted-foreground text-center animate-pulse">
-                            당신의 운명, 그리고 {question}에 대한 해답.
+                            {question}... 조용히 들여다보는 중이다 냥.
                         </p>
                     </motion.div>
                 )}
@@ -335,7 +335,7 @@ export default function ReadingPage() {
                         <div className="bg-secondary/5 rounded-3xl p-8 border border-secondary/20 shadow-xl">
                             <h3 className="text-2xl font-bold mb-6 flex items-center gap-2">
                                 <Star className="text-accent" />
-                                AI 분석 결과
+                                냥이의 해석
                             </h3>
                             <div className="prose prose-invert max-w-none prose-p:leading-relaxed prose-headings:text-primary-foreground text-gray-300">
                                 <ReactMarkdown>
@@ -346,7 +346,7 @@ export default function ReadingPage() {
 
                         <div className="flex justify-center mt-12 mb-8">
                             <Link href="/" className="px-8 py-3 rounded-full border border-primary text-primary hover:bg-primary hover:text-white transition-all">
-                                다른 고민 상담하기
+                                다른 고민도 알려달라냥
                             </Link>
                         </div>
                     </div>

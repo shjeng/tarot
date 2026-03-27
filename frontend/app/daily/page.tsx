@@ -64,9 +64,8 @@ export default function DailyPage() {
                         </div>
                         <h2 className="text-3xl font-bold">오늘 하루를 위한 조언</h2>
                         <p className="text-muted-foreground max-w-md break-keep">
-                            마음을 비우고 편안하게 집중하세요. <br />
-                            오늘 하루 당신에게 필요한 조언을 카드가 알려줄 것입니다.
-                            준비가 되셨다면 아래 버튼을 눌러주세요.
+                            눈을 살짝 감고 오늘을 생각해 보세냥. <br />
+                            냥이가 카드 한 장으로 하루의 기운을 읽어드릴게냥.
                         </p>
                         <button
                             onClick={startShuffle}
@@ -87,7 +86,7 @@ export default function DailyPage() {
                         exit={{ opacity: 0 }}
                         className="flex flex-col items-center gap-8 w-full"
                     >
-                        <h2 className="text-2xl font-bold animate-pulse">카드를 한 장 선택하세요</h2>
+                        <h2 className="text-2xl font-bold animate-pulse">이끌리는 카드를 한 장 골라보세냥</h2>
                         <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-4 max-w-6xl py-8 px-4">
                             {/* Render all cards in a grid */}
                             {cards.map((card, index) => (
@@ -103,7 +102,7 @@ export default function DailyPage() {
                                 </motion.div>
                             ))}
                         </div>
-                        <p className="text-muted-foreground text-sm">직관을 믿으세요.</p>
+                        <p className="text-muted-foreground text-sm">마음이 닿는 카드가 있을 거냥.</p>
                     </motion.div>
                 )}
 
@@ -154,12 +153,12 @@ export default function DailyPage() {
                                 className="space-y-4"
                             >
                                 <div className="p-4 rounded-xl bg-secondary/10 border border-secondary/20">
-                                    <h4 className="font-bold text-secondary mb-1">키워드</h4>
+                                    <h4 className="font-bold text-secondary mb-1">냥이가 읽은 키워드</h4>
                                     <p className="text-sm">{selectedCard.meaningUpright}</p>
                                 </div>
 
                                 <div>
-                                    <h4 className="font-bold text-lg mb-2">오늘의 조언</h4>
+                                    <h4 className="font-bold text-lg mb-2">냥이의 조언</h4>
                                     <div className="leading-relaxed text-muted-foreground whitespace-pre-wrap">
                                         {readingResult || selectedCard.desc}
                                     </div>
