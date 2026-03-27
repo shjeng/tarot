@@ -26,9 +26,9 @@ Supabase 대시보드 → **SQL Editor**에서 아래 SQL 실행:
 ```sql
 CREATE TABLE public.profiles (
   id          uuid REFERENCES auth.users(id) ON DELETE CASCADE PRIMARY KEY,
-  email       text,
   nickname    text,
   birth_date  date,
+  birth_time  time,
   provider    text,  -- 'google' | 'kakao' | 'naver'
   created_at  timestamptz DEFAULT now(),
   updated_at  timestamptz DEFAULT now()
@@ -38,10 +38,9 @@ CREATE TABLE public.profiles (
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS trigger AS $$
 BEGIN
-  INSERT INTO public.profiles (id, email, provider)
+  INSERT INTO public.profiles (id, provider)
   VALUES (
     NEW.id,
-    NEW.email,
     NEW.raw_app_meta_data->>'provider'
   );
   RETURN NEW;

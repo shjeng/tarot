@@ -57,3 +57,6 @@ Thumbs.db
 # Antigravity artifacts
 .antigravity/
 .gemini/
+
+# Superpowers brainstorm sessions
+.superpowers/

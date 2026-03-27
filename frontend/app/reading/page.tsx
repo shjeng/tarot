@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { createClient } from "@/lib/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
 import { tarotCards, TarotCard } from "@/data/tarotCards";
 import { Card } from "@/components/tarot/Card";
@@ -47,9 +48,15 @@ export default function ReadingPage() {
 
     const fetchReading = async (pickedCards: TarotCard[]) => {
         try {
+            const supabase = createClient();
+            const { data: { session } } = await supabase.auth.getSession();
+
             const response = await fetch("/api/tarot/spread", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: {
+                    "Content-Type": "application/json",
+                    ...(session ? { "Authorization": `Bearer ${session.access_token}` } : {}),
+                },
                 body: JSON.stringify({
                     cards: pickedCards,
                     question: question,
@@ -64,15 +71,13 @@ export default function ReadingPage() {
                 setReadingResult(data.reading);
                 setStep("result");
             } else {
-                // Handle error (mock for now or alert)
-                // Ensure to handle API failures gracefully
                 console.error("API Error", data);
                 setReadingResult("이런... 냥이가 이번엔 읽어내지 못했다냥. 다시 시도해 주세요.");
                 setStep("result");
             }
         } catch (e) {
             console.error(e);
-            setReadingResult("네트워크 오류가 발생했습니다.");
+            setReadingResult("네트워크 오류가 발생했다냥. 잠시 후 다시 시도해 주세요.");
             setStep("result");
         }
     };
