@@ -162,6 +162,7 @@ function SignupTab() {
     const { error } = await supabase.auth.signInWithOAuth({
       provider,
       options: {
+        // 신규 회원은 항상 onboarding으로 이동하므로 ?next= 파라미터 불필요
         redirectTo: `${window.location.origin}/auth/callback`,
       },
     });
@@ -187,7 +188,14 @@ function SignupTab() {
         options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
       });
       if (error) {
-        setError(error.message);
+        const msg = error.message.toLowerCase();
+        if (msg.includes("already registered") || msg.includes("already exists") || msg.includes("email address is already")) {
+          setError("이미 가입된 이메일이다냥.");
+        } else if (msg.includes("password") && msg.includes("6")) {
+          setError("비밀번호는 6자 이상이어야 한다냥.");
+        } else {
+          setError("가입에 실패했다냥. 다시 시도해 주세요.");
+        }
       } else {
         setDone(true);
       }
