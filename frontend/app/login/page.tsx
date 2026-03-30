@@ -21,17 +21,20 @@ function SocialButtons({
   onGoogle,
   onKakao,
   label,
+  disabled,
 }: {
   onGoogle: () => void;
   onKakao: () => void;
   label: "로그인" | "시작하기";
+  disabled?: boolean;
 }) {
   return (
     <div className="space-y-2">
       <button
         type="button"
         onClick={onGoogle}
-        className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-white text-gray-800 text-sm font-medium hover:bg-gray-50 transition-colors border border-gray-200"
+        disabled={disabled}
+        className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-white text-gray-800 text-sm font-medium hover:bg-gray-50 transition-colors border border-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
       >
         <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4"/>
@@ -44,7 +47,8 @@ function SocialButtons({
       <button
         type="button"
         onClick={onKakao}
-        className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-[#FEE500] text-[#191919] text-sm font-bold hover:bg-[#FDD800] transition-colors"
+        disabled={disabled}
+        className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-[#FEE500] text-[#191919] text-sm font-bold hover:bg-[#FDD800] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
       >
         <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path fillRule="evenodd" clipRule="evenodd" d="M9 0C4.029 0 0 3.136 0 7c0 2.437 1.524 4.574 3.84 5.855l-.98 3.658c-.087.325.277.588.56.392L7.54 14.37A10.65 10.65 0 0 0 9 14.5c4.971 0 9-3.134 9-7S13.971 0 9 0z" fill="#3C1E1E"/>
@@ -155,9 +159,17 @@ function SignupTab() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState(false);
+  const [agreeTerms, setAgreeTerms] = useState(false);
+  const [agreePrivacy, setAgreePrivacy] = useState(false);
   const supabase = createClient();
 
+  const allAgreed = agreeTerms && agreePrivacy;
+
   const handleSocial = async (provider: "google" | "kakao") => {
+    if (!allAgreed) {
+      setError("약관에 동의해야 가입할 수 있다냥.");
+      return;
+    }
     setError("");
     const { error } = await supabase.auth.signInWithOAuth({
       provider,
@@ -171,6 +183,10 @@ function SignupTab() {
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!allAgreed) {
+      setError("약관에 동의해야 가입할 수 있다냥.");
+      return;
+    }
     if (password !== confirm) {
       setError("비밀번호가 일치하지 않다냥.");
       return;
@@ -233,6 +249,7 @@ function SignupTab() {
         onGoogle={() => handleSocial("google")}
         onKakao={() => handleSocial("kakao")}
         label="시작하기"
+        disabled={!allAgreed}
       />
       <Divider />
       <form onSubmit={handleSignup} className="space-y-3">
@@ -260,10 +277,53 @@ function SignupTab() {
           required
           className="w-full p-3 rounded-xl bg-secondary/5 border border-primary/20 focus:border-accent outline-none transition-all text-sm"
         />
+        {/* 약관 동의 */}
+        <div className="space-y-2 pt-1">
+          <label className="flex items-start gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={agreeTerms}
+              onChange={(e) => setAgreeTerms(e.target.checked)}
+              className="mt-0.5 accent-primary shrink-0"
+            />
+            <span className="text-xs text-muted-foreground leading-relaxed">
+              <span className="text-accent font-medium">[필수]</span>{" "}
+              <a
+                href="/terms"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline hover:text-foreground transition-colors"
+              >
+                서비스 이용약관
+              </a>
+              에 동의합니다
+            </span>
+          </label>
+          <label className="flex items-start gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={agreePrivacy}
+              onChange={(e) => setAgreePrivacy(e.target.checked)}
+              className="mt-0.5 accent-primary shrink-0"
+            />
+            <span className="text-xs text-muted-foreground leading-relaxed">
+              <span className="text-accent font-medium">[필수]</span>{" "}
+              <a
+                href="/privacy"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline hover:text-foreground transition-colors"
+              >
+                개인정보 처리방침
+              </a>
+              에 동의합니다
+            </span>
+          </label>
+        </div>
         {error && <p className="text-red-400 text-xs">{error}</p>}
         <button
           type="submit"
-          disabled={loading}
+          disabled={loading || !allAgreed}
           className="w-full py-3 rounded-full bg-primary text-primary-foreground font-bold text-sm hover:bg-primary/90 transition-all disabled:opacity-50"
         >
           {loading ? "가입 중..." : "회원가입"}
