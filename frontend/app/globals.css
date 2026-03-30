@@ -42,50 +42,26 @@
   }
 }
 
-/* 
-  Mystical Tarot Theme Variables 
+/*
+  Mystical Tarot Theme Variables
   Base: Dark, Deep Purple, Gold Accents
 */
 :root {
-  --background: #f5f3ee;
-  --foreground: #1a1f3a;
-  --muted-foreground: #5a6480;
+  --background: #0f1640;
+  --foreground: #eaeef8;
+  --muted-foreground: #a8b4cc;
 
-  --primary: #3a5080;
-  --primary-foreground: #f5f3ee;
+  --primary: #7a9cc0;
+  --primary-foreground: #ffffff;
 
-  --secondary: #c8a96e;
-  --secondary-foreground: #1a1f3a;
+  --secondary: #e8d5a3;
+  --secondary-foreground: #0a0f2e;
 
-  --accent: #6b8ab5;
-  --accent-foreground: #ffffff;
+  --accent: #9ab5d4;
+  --accent-foreground: #0a0f2e;
 
-  --border: #b8c0d8;
+  --border: #2a3a6e;
 }
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0f1640;
-    --foreground: #eaeef8;
-    --muted-foreground: #a8b4cc;
-
-    --primary: #7a9cc0;
-    --primary-foreground: #ffffff;
-
-    --secondary: #e8d5a3;
-    --secondary-foreground: #0a0f2e;
-
-    --accent: #9ab5d4;
-    --accent-foreground: #0a0f2e;
-
-    --border: #2a3a6e;
-  }
-}
-
-/* Force dark mode specific overrides if needed, or stick to system preference. 
-   Given "Mystical Atmosphere", dark mode is preferred. 
-   We can add a class `.dark` strategy later if needed, but for now using media query.
-*/
 
 body {
   background: var(--background);
