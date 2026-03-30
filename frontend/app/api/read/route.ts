@@ -1,11 +1,18 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { NextResponse } from "next/server";
+import { createClient } from "@/lib/supabase/server";
 
 // Using edge runtime might be good, but nodejs is safer for now with environment variables and SDK
-// export const runtime = 'edge'; 
+// export const runtime = 'edge';
 
 export async function POST(req: Request) {
     try {
+        const supabase = await createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+
         const apiKey = process.env.GEMINI_API_KEY;
         if (!apiKey) {
             return NextResponse.json(
