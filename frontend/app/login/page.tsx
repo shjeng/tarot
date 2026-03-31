@@ -87,7 +87,7 @@ function LoginTab({ next }: { next: string }) {
         redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`,
       },
     });
-    if (error) setError("소셜 로그인에 실패했다냥. 다시 시도해 주세요.");
+    if (error) setError("소셜 로그인에 실패했다냥. 다시 시도해 달라냥.");
   };
 
   const handleEmailLogin = async (e: React.FormEvent) => {
@@ -151,6 +151,40 @@ function LoginTab({ next }: { next: string }) {
   );
 }
 
+// ─── 비밀번호 유효성 조건 ────────────────────────────────────────────────────
+const passwordRules = [
+  { label: "8자 이상", test: (pw: string) => pw.length >= 8 },
+  { label: "영문 포함", test: (pw: string) => /[a-zA-Z]/.test(pw) },
+  { label: "숫자 포함", test: (pw: string) => /[0-9]/.test(pw) },
+  { label: "특수문자 포함", test: (pw: string) => /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(pw) },
+];
+
+function isPasswordValid(pw: string) {
+  return passwordRules.every((r) => r.test(pw));
+}
+
+// ─── 비밀번호 유효성 표시 컴포넌트 ──────────────────────────────────────────
+function PasswordStrength({ password }: { password: string }) {
+  if (!password) return null;
+  return (
+    <div className="flex flex-wrap gap-x-3 gap-y-1 pt-1">
+      {passwordRules.map((rule) => {
+        const ok = rule.test(password);
+        return (
+          <span
+            key={rule.label}
+            className={`text-xs flex items-center gap-0.5 transition-colors ${
+              ok ? "text-green-400" : "text-muted-foreground"
+            }`}
+          >
+            {ok ? "✓" : "✗"} {rule.label}
+          </span>
+        );
+      })}
+    </div>
+  );
+}
+
 // ─── 회원가입 탭 ─────────────────────────────────────────────────────────────
 function SignupTab() {
   const [email, setEmail] = useState("");
@@ -187,12 +221,12 @@ function SignupTab() {
       setError("약관에 동의해야 가입할 수 있다냥.");
       return;
     }
-    if (password !== confirm) {
-      setError("비밀번호가 일치하지 않다냥.");
+    if (!isPasswordValid(password)) {
+      setError("비밀번호 조건을 모두 충족해야 한다냥.");
       return;
     }
-    if (password.length < 6) {
-      setError("비밀번호는 6자 이상이어야 한다냥.");
+    if (password !== confirm) {
+      setError("비밀번호가 일치하지 않다냥.");
       return;
     }
     setLoading(true);
@@ -207,10 +241,10 @@ function SignupTab() {
         const msg = error.message.toLowerCase();
         if (msg.includes("already registered") || msg.includes("already exists") || msg.includes("email address is already")) {
           setError("이미 가입된 이메일이다냥.");
-        } else if (msg.includes("password") && msg.includes("6")) {
-          setError("비밀번호는 6자 이상이어야 한다냥.");
+        } else if (msg.includes("password")) {
+          setError("비밀번호 조건을 확인해 달라냥.");
         } else {
-          setError("가입에 실패했다냥. 다시 시도해 주세요.");
+          setError("가입에 실패했다냥. 다시 시도해 달라냥.");
         }
       } else {
         setDone(true);
@@ -231,7 +265,7 @@ function SignupTab() {
         <p className="font-bold text-base">이메일을 확인해보세냥!</p>
         <p className="text-sm text-muted-foreground">
           <span className="text-accent">{email}</span>로 인증 링크를 보냈다냥.
-          <br />확인 후 로그인해 주세요.
+          <br />확인 후 부탁드린다냥!
         </p>
       </motion.div>
     );
@@ -263,12 +297,13 @@ function SignupTab() {
         />
         <input
           type="password"
-          placeholder="비밀번호 (6자 이상)"
+          placeholder="비밀번호 (영문+숫자+특수문자 8자 이상)"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
           className="w-full p-3 rounded-xl bg-secondary/5 border border-primary/20 focus:border-accent outline-none transition-all text-sm"
         />
+        <PasswordStrength password={password} />
         <input
           type="password"
           placeholder="비밀번호 확인"
