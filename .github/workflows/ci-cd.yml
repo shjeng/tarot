@@ -120,6 +120,11 @@ jobs:
           script: |
             # 오류 발생 시 즉시 스크립트 중단 (안전한 배포를 위해 필수)
             set -e
+
+            # /usr/local/nvm에 설치된 Node.js를 opc 유저 SSH 세션에서 사용 가능하도록 PATH 설정
+            export NVM_DIR="/usr/local/nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+
             cd /opt/tarot
 
             echo "=== 최신 코드 pull ==="
