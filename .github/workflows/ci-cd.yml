@@ -161,10 +161,12 @@ jobs:
 
             echo "=== 백엔드 빌드 ==="
             cd backend
-            # --omit=dev: 프로덕션에 불필요한 개발 도구(nodemon, ts-node 등) 제외
-            npm ci --omit=dev
+            # devDependencies 포함 설치 (tsc 빌드에 typescript 필요)
+            npm ci
             # TypeScript → JavaScript 컴파일 (결과물: dist/)
             npm run build
+            # 빌드 후 devDependencies 제거하여 프로덕션 환경 최적화
+            npm prune --omit=dev
             cd ..
 
             echo "=== 프론트엔드 빌드 ==="
