@@ -171,9 +171,11 @@ jobs:
 
             echo "=== 프론트엔드 빌드 ==="
             cd frontend
-            npm ci --omit=dev
             # Next.js 프로덕션 빌드 (결과물: .next/)
             npm run build
+            
+            npm ci --omit=dev
+            
             cd ..
 
             echo "=== 서비스 재시작 ==="
