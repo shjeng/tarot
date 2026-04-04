@@ -179,10 +179,10 @@ jobs:
             cd ..
 
             echo "=== 서비스 재시작 ==="
-            # pm2: Node.js 프로세스 매니저 — 서버 재시작 및 크래시 자동 복구
-            # restart: 이미 실행 중이면 재시작 / 없으면 start로 신규 등록
-            pm2 restart tarot-backend || pm2 start backend/dist/server.js --name tarot-backend
-            # pm2 save: 현재 프로세스 목록을 저장 → 서버 재부팅 후에도 자동 시작
+            # --cwd 옵션으로 실행 디렉토리를 명시 → dotenv가 올바른 위치의 .env를 찾음
+            pm2 restart tarot-backend || pm2 start /opt/tarot/backend/dist/server.js --name tarot-backend --cwd /opt/tarot/backend
+            # 프론트엔드 Next.js 서버 재시작 (없으면 신규 등록)
+            pm2 restart tarot-frontend || (cd /opt/tarot/frontend && pm2 start npm --name tarot-frontend -- start)
             pm2 save
 
             echo "=== 배포 완료 ==="
