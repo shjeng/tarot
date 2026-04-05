@@ -25,7 +25,7 @@ export async function Header() {
             오늘의 운세
           </Link>
           <Link href="/reading" className="text-sm font-medium transition-colors hover:text-primary">
-            AI 타로 점
+            고양이 타로 상담
           </Link>
           {user ? (
             <>
