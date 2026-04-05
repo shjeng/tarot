@@ -1,31 +1,22 @@
 import { Request, Response } from 'express';
 import { generateDailyReading, generateSpreadReading, CardInput, SpreadReadingOptions } from '../services/gemini.service';
 import { logger } from '../logger/logger';
-import { supabaseAdmin } from '../lib/supabase';
+import { createUserClient } from '../lib/supabase';
 
 /**
- * 로그인한 사용자의 타로 리딩 결과를 reading_histories 테이블에 저장한다.
+ * 유저 JWT로 생성한 Supabase 클라이언트로 히스토리를 저장한다.
+ * RLS가 정상 동작하므로 service_role key 없이도 자기 자신 데이터에 접근 가능하다.
  * 저장 실패 시 에러를 던지지 않고 로그만 남긴다 (히스토리 저장 실패가 리딩 응답에 영향을 주지 않도록).
- *
- * @param userId - 저장할 사용자의 UUID
- * @param type - 리딩 종류 ('daily' | 'spread')
- * @param requestData - 원본 요청 데이터 (카드, 질문 등)
- * @param reading - AI가 생성한 리딩 텍스트
  */
 const saveHistory = async (
-    userId: string,
+    accessToken: string,
     type: 'daily' | 'spread',
     requestData: object,
     reading: string,
 ): Promise<void> => {
-    // supabaseAdmin이 없으면 저장 불가 (SUPABASE_SERVICE_ROLE_KEY 미설정 상태)
-    if (!supabaseAdmin) {
-        logger.warn('supabaseAdmin 미설정 — 히스토리를 저장할 수 없습니다.');
-        return;
-    }
-    const { error } = await supabaseAdmin
+    const { error } = await createUserClient(accessToken)
         .from('reading_histories')
-        .insert({ user_id: userId, type, request_data: requestData, reading });
+        .insert({ type, request_data: requestData, reading });
     if (error) {
         logger.error('reading_histories DB 저장 실패', { error: error.message });
     }
@@ -69,7 +60,8 @@ export const getDailyTarot = async (req: DailyTarotRequest, res: Response): Prom
 
         // 로그인한 사용자인 경우에만 히스토리 저장 (optionalAuth 미들웨어에서 req.user 설정됨)
         if (req.user) {
-            await saveHistory(req.user.id, 'daily', { card }, reading);
+            const token = req.headers.authorization!.slice(7);
+            await saveHistory(token, 'daily', { card }, reading);
         }
 
         res.json({ reading });
@@ -176,10 +168,9 @@ export const getSpreadTarot = async (req: SpreadTarotRequest, res: Response): Pr
 
         const reading = await generateSpreadReading(options);
 
-        // spread는 requireAuth로 보호되므로 req.user가 항상 존재함
-        if (req.user) {
-            await saveHistory(req.user.id, 'spread', { cards, question, birthDate, birthTime, gender }, reading);
-        }
+        // spread는 requireAuth로 보호되므로 토큰이 항상 존재함
+        const token = req.headers.authorization!.slice(7);
+        await saveHistory(token, 'spread', { cards, question, birthDate, birthTime, gender }, reading);
 
         res.json({ reading });
     } catch (error) {
@@ -199,25 +190,15 @@ export const getSpreadTarot = async (req: SpreadTarotRequest, res: Response): Pr
  */
 export const getMyHistory = async (req: Request, res: Response): Promise<void> => {
     try {
-        // requireAuth 미들웨어에서 설정된 사용자 ID
-        const userId = req.user!.id;
-
         // 페이지네이션 파라미터 파싱 및 범위 제한
         const limit = Math.min(Number(req.query.limit) || 20, 100);
         const offset = Number(req.query.offset) || 0;
 
-        // supabaseAdmin이 없으면 조회 불가 (SUPABASE_SERVICE_ROLE_KEY 미설정 상태)
-        if (!supabaseAdmin) {
-            logger.warn('supabaseAdmin 미설정 — 히스토리를 조회할 수 없습니다.');
-            res.status(503).json({ error: '서비스를 일시적으로 사용할 수 없습니다.' });
-            return;
-        }
-
-        // 본인 히스토리만 최신순으로 조회 (count: 'exact'로 전체 개수도 함께 반환)
-        const { data, error, count } = await supabaseAdmin
+        // 유저 JWT로 클라이언트 생성 — RLS가 자동으로 본인 데이터만 필터링
+        const token = req.headers.authorization!.slice(7);
+        const { data, error, count } = await createUserClient(token)
             .from('reading_histories')
             .select('id, type, request_data, reading, created_at', { count: 'exact' })
-            .eq('user_id', userId)
             .order('created_at', { ascending: false })
             .range(offset, offset + limit - 1);
 
