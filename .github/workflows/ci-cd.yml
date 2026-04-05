@@ -149,6 +149,7 @@ jobs:
             MAIL_TO=${{ secrets.MAIL_TO }}
             LOG_LEVEL=${{ secrets.LOG_LEVEL }}
             LOG_DIR=${{ secrets.LOG_DIR }}
+            MONGODB_URL=${{ secrets.MONGODB_URL }}
             ENVEOF
 
             echo "=== 프론트엔드 .env 생성 ==="
