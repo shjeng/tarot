@@ -11,9 +11,11 @@ export function LogoutButton() {
     const { error } = await supabase.auth.signOut();
     if (error) {
       console.error("로그아웃 실패:", error.message);
+      return;
     }
+    // push로 이동하면 서버 컴포넌트(Header)가 새 세션 상태로 다시 렌더링됨
+    router.push("/");
     router.refresh();
-    router.push("/login");
   };
 
   return (

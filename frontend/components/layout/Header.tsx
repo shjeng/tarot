@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { Cat } from 'lucide-react';
 import { createClient } from '@/lib/supabase/server';
 import { LogoutButton } from '@/components/auth/LogoutButton';
+import { MobileMenu } from '@/components/layout/MobileMenu';
 
 export async function Header() {
   const supabase = await createClient();
@@ -9,7 +10,7 @@ export async function Header() {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-primary/20 bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container mx-auto flex h-16 items-center justify-between px-4">
+      <div className="relative container mx-auto flex h-16 items-center justify-between px-4">
         <Link href="/" className="flex flex-shrink-0 items-center gap-2 transition-opacity hover:opacity-80">
           <Cat className="h-5 w-5 flex-shrink-0 text-primary" />
           <span className="text-base sm:text-xl font-bold font-serif whitespace-nowrap bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
@@ -44,10 +45,7 @@ export async function Header() {
           )}
         </nav>
 
-        <button className="md:hidden p-2 text-primary">
-          <span className="sr-only">Toggle menu</span>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="4" x2="20" y1="12" y2="12" /><line x1="4" x2="20" y1="6" y2="6" /><line x1="4" x2="20" y1="18" y2="18" /></svg>
-        </button>
+        <MobileMenu isLoggedIn={!!user} />
       </div>
     </header>
   );

@@ -71,6 +71,18 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* 버튼과 클릭 가능한 요소에 기본 pointer 커서 적용 */
+button,
+[role="button"],
+label[for],
+select {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
+
 /* Custom Scrollbar for Webkit */
 ::-webkit-scrollbar {
   width: 8px;
