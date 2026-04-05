@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
 import { tarotCards, TarotCard } from "@/data/tarotCards";
@@ -10,19 +10,29 @@ import Link from "next/link";
 import { ArrowLeft, Star, Send } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 
-// Define reading state in a context or pass via query/state manager in a real app. 
-// For simplicity, we might show results on the same page or pass via URL params (limited).
-// Better approach for large response: Use client state if staying on same page or Context API.
-// Let's implement steps: Input -> Shuffle -> Pick 3 -> Loading AI -> Result Layout
-
 type Step = "input" | "shuffling" | "picking" | "analyzing" | "result";
 
 export default function ReadingPage() {
     const [step, setStep] = useState<Step>("input");
     const [question, setQuestion] = useState("");
-    const [birthDate, setBirthDate] = useState("2000-01-01");
+    const [birthDate, setBirthDate] = useState("");
     const [birthTime, setBirthTime] = useState("");
     const [gender, setGender] = useState<"male" | "female" | "other" | "">("");
+    const supabase = useMemo(() => createClient(), []);
+
+    // 마운트 시 프로필에서 생년월일·생시 불러와 미리 채움
+    useEffect(() => {
+        supabase.auth.getUser().then(async ({ data: { user } }) => {
+            if (!user) return;
+            const { data } = await supabase
+                .from("profiles")
+                .select("birth_date, birth_time")
+                .eq("id", user.id)
+                .single();
+            if (data?.birth_date) setBirthDate(data.birth_date);
+            if (data?.birth_time) setBirthTime(data.birth_time);
+        });
+    }, [supabase]);
     const [cards, setCards] = useState<TarotCard[]>([]);
     const [selectedCards, setSelectedCards] = useState<TarotCard[]>([]);
     const [readingResult, setReadingResult] = useState<string>("");
@@ -48,7 +58,6 @@ export default function ReadingPage() {
 
     const fetchReading = async (pickedCards: TarotCard[]) => {
         try {
-            const supabase = createClient();
             const { data: { user } } = await supabase.auth.getUser();
             const { data: { session } } = await supabase.auth.getSession();
 
