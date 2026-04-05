@@ -64,7 +64,7 @@ export default function DailyPage() {
                         </div>
                         <h2 className="text-3xl font-bold">오늘 하루를 위한 조언</h2>
                         <p className="text-muted-foreground max-w-md break-keep">
-                            눈을 살짝 감고 오늘을 생각해 보세냥. <br />
+                            눈을 살짝 감고 오늘을 생각해 보거라냥. <br />
                             냥이가 카드 한 장으로 하루의 기운을 읽어드릴게냥.
                         </p>
                         <button

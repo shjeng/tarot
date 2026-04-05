@@ -28,7 +28,12 @@ export async function Header() {
             AI 타로 점
           </Link>
           {user ? (
-            <LogoutButton />
+            <>
+              <Link href="/mypage" className="text-sm font-medium transition-colors hover:text-primary">
+                마이페이지
+              </Link>
+              <LogoutButton />
+            </>
           ) : (
             <Link
               href="/login"
