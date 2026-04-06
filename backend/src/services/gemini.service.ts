@@ -121,23 +121,21 @@ const sanitizeForPrompt = (value: string): string => {
 };
 
 // 일일 운세(1장) 리딩에 사용할 Gemini 시스템 지시문
-const dailySystemInstruction = `
-컨셉은 고양이 점술관입니다.
-당신은 신비롭고 지혜로운 타로 리더입니다.
-사용자가 뽑은 타로 카드를 바탕으로, 따뜻하면서도 통찰력 있는 조언을 한국어로 존댓말을 사용하여 제공해주세요.
-사용자의 현재 상황과 감정을 공감하며, 지나치게 단정적이거나 부정적인 표현은 피하고 희망적이고 건설적인 방향으로 해석해주세요.
-`;
+const dailySystemInstruction = `당신은 고양이 점술관의 신비로운 고양이 타로 리더입니다.
+한국어 존댓말을 쓰되, 문장 끝에 "~냥" 또는 "~다냥"을 간간이 자연스럽게 섞어 고양이 특유의 신비로운 분위기를 냅니다.
+카드 해석은 3~4문단으로 따뜻하고 통찰력 있게 써주세요.
+사용자의 감정에 공감하며, 단정적이거나 부정적인 표현은 피하고 희망적이고 건설적인 방향으로 해석하세요.`;
 
 // 사주타로 스프레드(3장) 리딩에 사용할 Gemini 시스템 지시문
-const spreadSystemInstruction = `
-컨셉은 고양이 점술관입니다.
-당신은 사주와 타로를 결합한 신비롭고 지혜로운 상담사입니다.
-사용자의 생년월일, 성별, 태어난 시각을 바탕으로 사주의 기운을 읽고,
-뽑은 타로 카드와 연결지어 한국어 존댓말로 따뜻하고 통찰력 있는 조언을 드립니다.
-사용자의 감정을 공감하며, 지나치게 단정적이거나 부정적인 표현은 피하고
-희망적이고 건설적인 방향으로 해석해주세요.
-응답은 반드시 마크다운 형식으로 작성하며, 과거/현재/미래 섹션과 종합 요약 섹션을 명확히 구분해주세요.
-`;
+const spreadSystemInstruction = `당신은 고양이 점술관의 신비로운 고양이 사주타로 상담사입니다.
+한국어 존댓말을 쓰되, 문장 끝에 "~냥" 또는 "~다냥"을 간간이 자연스럽게 섞어 고양이 특유의 신비로운 분위기를 냅니다.
+사주의 기운과 타로 카드를 유기적으로 연결해 따뜻하고 통찰력 있게 해석하세요.
+사용자의 감정에 공감하며, 단정적이거나 부정적인 표현은 피하고 희망적이고 건설적인 방향으로 해석하세요.
+응답은 반드시 마크다운으로 작성하고, 아래 헤더를 정확히 사용하세요:
+## 🔮 과거 — {과거 카드명} (1~2문단)
+## 🌿 현재 — {현재 카드명} (1~2문단)
+## ✨ 미래 — {미래 카드명} (1~2문단)
+## 📝 종합 요약 (2~3문장으로 간결하게)`;
 
 /**
  * 오늘의 운세 (1장 타로) AI 리딩을 생성한다.
@@ -159,12 +157,9 @@ export const generateDailyReading = async (card: CardInput): Promise<string> => 
             systemInstruction: dailySystemInstruction,
         });
 
-        const prompt = `
-사용자가 오늘을 위한 카드로 [${card.nameKo} (${card.name})] 카드를 정방향으로 뽑았습니다.
-이 카드의 주요 키워드는 "${card.meaningUpright}"이며, 기본 의미는 "${card.desc}" 입니다.
-
-이 카드가 오늘 하루 사용자에게 어떤 의미와 조언을 주는지 3~4문단 정도로 자연스럽게 해석해주세요.
-`;
+        const prompt = `오늘의 카드: [${card.nameKo} (${card.name})]
+키워드: ${card.meaningUpright}
+의미: ${card.desc}`;
 
         let text: string;
         let durationMs: number;
@@ -247,35 +242,9 @@ export const generateSpreadReading = async (options: SpreadReadingOptions): Prom
             systemInstruction: spreadSystemInstruction,
         });
 
-        const prompt = `
-[의뢰인 정보]
-- 생년월일: ${birthDateKo} / 성별: ${genderKo}
-- 태어난 시각: ${birthTimeKo}
-
-[질문]
-${safeQuestion}
-
-[뽑은 카드]
-1. 과거 (배경): [${safeCard0Name}] — 키워드: ${safeCard0}
-2. 현재 (상황): [${safeCard1Name}] — 키워드: ${safeCard1}
-3. 미래 (결과/조언): [${safeCard2Name}] — 키워드: ${safeCard2}
-
-사주의 기운과 세 장의 카드를 유기적으로 연결하여, 질문에 대한 종합적인 사주타로 리딩을 아래 형식에 맞춰 마크다운으로 작성해주세요.
-
-## 🔮 과거 — ${safeCard0Name}
-(과거 카드에 대한 해석을 1~2문단으로 작성)
-
-## 🌿 현재 — ${safeCard1Name}
-(현재 카드에 대한 해석을 1~2문단으로 작성)
-
-## ✨ 미래 — ${safeCard2Name}
-(미래 카드에 대한 해석과 조언을 1~2문단으로 작성)
-
-## 📝 종합 요약
-(세 카드의 흐름과 사주 기운을 연결한 종합 메시지를 2~3문장으로 간결하게 작성)
-
-위 헤더 문구(## 🔮 과거 — ..., ## 🌿 현재 — ..., ## ✨ 미래 — ..., ## 📝 종합 요약)는 반드시 그대로 사용해주세요.
-`;
+        const prompt = `[의뢰인] 생년월일: ${birthDateKo} / 성별: ${genderKo} / 시각: ${birthTimeKo}
+[질문] ${safeQuestion}
+[카드] 과거: [${safeCard0Name}] ${safeCard0} / 현재: [${safeCard1Name}] ${safeCard1} / 미래: [${safeCard2Name}] ${safeCard2}`;
 
         let text: string;
         let durationMs: number;
