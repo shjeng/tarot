@@ -1,14 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { tarotCards, TarotCard } from "@/data/tarotCards";
 import { Card } from "@/components/tarot/Card";
 import { shuffleArray } from "@/lib/shuffle";
+import { createClient } from "@/lib/supabase/client";
 import Link from "next/link";
 import { ArrowLeft, RotateCcw, Moon } from "lucide-react";
 
-type Step = "intro" | "shuffling" | "picking" | "analyzing" | "result";
+type Step = "intro" | "picking" | "analyzing" | "result";
 
 export default function DailyPage() {
     const [step, setStep] = useState<Step>("intro");
@@ -16,6 +17,7 @@ export default function DailyPage() {
     const [selectedCard, setSelectedCard] = useState<TarotCard | null>(null);
     const [isFlipped, setIsFlipped] = useState(false);
     const [readingResult, setReadingResult] = useState<string>("");
+    const supabase = useMemo(() => createClient(), []);
 
     const startShuffle = () => {
         const shuffled = shuffleArray(tarotCards);
@@ -23,10 +25,26 @@ export default function DailyPage() {
         setStep("picking");
     };
 
-    const handleCardPick = (card: TarotCard) => {
+    const handleCardPick = async (card: TarotCard) => {
         setSelectedCard(card);
-        // API 연동 없이 카드 자체의 설명을 결과에 반영하고 즉시 결과 화면으로 이동
-        setReadingResult(card.desc);
+        setStep("analyzing");
+
+        try {
+            const { data: { session } } = await supabase.auth.getSession();
+            const response = await fetch("/api/tarot/daily", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    ...(session ? { "Authorization": `Bearer ${session.access_token}` } : {}),
+                },
+                body: JSON.stringify({ card }),
+            });
+            const data = await response.json();
+            setReadingResult(data.reading || card.desc);
+        } catch {
+            setReadingResult(card.desc);
+        }
+
         setStep("result");
         setTimeout(() => setIsFlipped(true), 100);
     };
@@ -36,6 +54,7 @@ export default function DailyPage() {
         setSelectedCard(null);
         setIsFlipped(false);
         setCards([]);
+        setReadingResult("");
     };
 
     return (
@@ -47,7 +66,7 @@ export default function DailyPage() {
                 <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
                     오늘의 운세
                 </h1>
-                <div className="w-20" /> {/* Spacer */}
+                <div className="w-20" />
             </div>
 
             <AnimatePresence mode="wait">
@@ -76,8 +95,6 @@ export default function DailyPage() {
                     </motion.div>
                 )}
 
-
-
                 {step === "picking" && (
                     <motion.div
                         key="picking"
@@ -88,7 +105,6 @@ export default function DailyPage() {
                     >
                         <h2 className="text-2xl font-bold animate-pulse">이끌리는 카드를 한 장 골라보세냥</h2>
                         <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-4 max-w-6xl py-8 px-4">
-                            {/* Render all cards in a grid */}
                             {cards.map((card, index) => (
                                 <motion.div
                                     key={card.id}
@@ -106,7 +122,26 @@ export default function DailyPage() {
                     </motion.div>
                 )}
 
-
+                {step === "analyzing" && (
+                    <motion.div
+                        key="analyzing"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        className="flex flex-col items-center justify-center gap-8 py-20"
+                    >
+                        <div className="relative w-32 h-32">
+                            <div className="absolute inset-0 rounded-full border-4 border-primary/30 animate-ping" />
+                            <div className="absolute inset-2 rounded-full border-4 border-accent/50 animate-spin" style={{ animationDuration: '3s' }} />
+                            <div className="absolute inset-0 flex items-center justify-center text-4xl">🔮</div>
+                        </div>
+                        <h2 className="text-2xl font-bold text-center">
+                            냥이가 카드를 읽고 있다냥...
+                        </h2>
+                        <p className="text-muted-foreground text-center animate-pulse">
+                            잠시만 기다려 달라냥.
+                        </p>
+                    </motion.div>
+                )}
 
                 {step === "result" && selectedCard && (
                     <motion.div
@@ -122,7 +157,6 @@ export default function DailyPage() {
                                 frontImage={selectedCard.image}
                                 name={selectedCard.name}
                                 className="shadow-2xl shadow-primary/30 w-[180px] h-[300px] md:w-[280px] md:h-[460px] lg:w-[320px] lg:h-[520px]"
-                            // inline size properties are removed in favor of responsive tailwind classes
                             />
                         </div>
 
@@ -160,7 +194,7 @@ export default function DailyPage() {
                                 <div>
                                     <h4 className="font-bold text-lg mb-2">냥이의 조언</h4>
                                     <div className="leading-relaxed text-muted-foreground whitespace-pre-wrap">
-                                        {readingResult || selectedCard.desc}
+                                        {readingResult}
                                     </div>
                                 </div>
                             </motion.div>

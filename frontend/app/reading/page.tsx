@@ -58,14 +58,13 @@ export default function ReadingPage() {
 
     const fetchReading = async (pickedCards: TarotCard[]) => {
         try {
-            const { data: { user } } = await supabase.auth.getUser();
             const { data: { session } } = await supabase.auth.getSession();
 
             const response = await fetch("/api/tarot/spread", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    ...(user && session ? { "Authorization": `Bearer ${session.access_token}` } : {}),
+                    ...(session ? { "Authorization": `Bearer ${session.access_token}` } : {}),
                 },
                 body: JSON.stringify({
                     cards: pickedCards,

@@ -10,41 +10,46 @@ export async function middleware(request: NextRequest) {
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
   if (!supabaseUrl || !supabaseAnonKey) {
-    console.error('NEXT_PUBLIC_SUPABASE_URL 또는 NEXT_PUBLIC_SUPABASE_ANON_KEY가 설정되지 않았습니다.')
     return supabaseResponse
   }
 
-  const supabase = createServerClient(
-    supabaseUrl,
-    supabaseAnonKey,
-    {
-      cookies: {
-        getAll() {
-          return request.cookies.getAll()
-        },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) =>
-            request.cookies.set(name, value)
-          )
-          supabaseResponse = NextResponse.next({ request })
-          cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options)
-          )
-        },
+  const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
+    cookies: {
+      getAll() {
+        return request.cookies.getAll()
       },
-    }
-  )
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      setAll(cookiesToSet: any[]) {
+        cookiesToSet.forEach((cookie) =>
+          request.cookies.set(cookie.name, cookie.value)
+        )
+        supabaseResponse = NextResponse.next({ request })
+        cookiesToSet.forEach((cookie) =>
+          supabaseResponse.cookies.set(cookie.name, cookie.value, cookie.options)
+        )
+      },
+    },
+  })
 
-  const { data: { user } } = await supabase.auth.getUser()
+  // getSession(): 쿠키에서 읽기만 하므로 네트워크 요청 없음
+  const { data: { session } } = await supabase.auth.getSession()
+  const pathname = request.nextUrl.pathname
 
-  const isProtected = PROTECTED_PATHS.some(p =>
-    request.nextUrl.pathname.startsWith(p)
-  )
-
-  if (isProtected && !user) {
+  // 보호된 경로에 비로그인 접근 → /login으로 리다이렉트
+  const isProtected = PROTECTED_PATHS.some(p => pathname.startsWith(p))
+  if (isProtected && !session) {
     const url = request.nextUrl.clone()
     url.pathname = '/login'
-    url.searchParams.set('next', request.nextUrl.pathname)
+    url.searchParams.set('next', pathname)
+    return NextResponse.redirect(url)
+  }
+
+  // 로그인 상태로 /login 접근 → ?next 또는 /으로 리다이렉트
+  if (pathname === '/login' && session) {
+    const url = request.nextUrl.clone()
+    const next = request.nextUrl.searchParams.get('next') ?? '/'
+    url.pathname = next.startsWith('/') && !next.startsWith('//') ? next : '/'
+    url.search = ''
     return NextResponse.redirect(url)
   }
 
@@ -53,6 +58,10 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    '/login',
+    '/reading/:path*',
+    '/daily/:path*',
+    '/onboarding/:path*',
+    '/mypage/:path*',
   ],
 }
