@@ -18,19 +18,22 @@ export default function ReadingPage() {
     const [birthDate, setBirthDate] = useState("");
     const [birthTime, setBirthTime] = useState("");
     const [gender, setGender] = useState<"male" | "female" | "other" | "">("");
+    const [profileLoading, setProfileLoading] = useState(true);
     const supabase = useMemo(() => createClient(), []);
 
     // 마운트 시 프로필에서 생년월일·생시 불러와 미리 채움
     useEffect(() => {
-        supabase.auth.getUser().then(async ({ data: { user } }) => {
-            if (!user) return;
+        supabase.auth.getSession().then(async ({ data: { session } }) => {
+            if (!session) { setProfileLoading(false); return; }
             const { data } = await supabase
                 .from("profiles")
                 .select("birth_date, birth_time")
-                .eq("id", user.id)
+                .eq("id", session.user.id)
                 .single();
+            // TODO: 테스트용 딜레이 — 확인 후 제거
             if (data?.birth_date) setBirthDate(data.birth_date);
             if (data?.birth_time) setBirthTime(data.birth_time);
+            setProfileLoading(false);
         });
     }, [supabase]);
     const [cards, setCards] = useState<TarotCard[]>([]);
@@ -92,7 +95,40 @@ export default function ReadingPage() {
     };
 
     return (
-        <div className="flex flex-col items-center min-h-[80vh] py-8">
+        <div className="relative flex flex-col items-center min-h-[80vh] py-8">
+
+            <AnimatePresence>
+                {profileLoading && (
+                    <motion.div
+                        key="profile-loading"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-6 bg-background/80 backdrop-blur-sm"
+                    >
+                        <div className="relative text-6xl">
+                            <motion.span
+                                animate={{ rotate: [0, -15, 15, -15, 0] }}
+                                transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+                                className="inline-block"
+                            >
+                                🐱
+                            </motion.span>
+                            <motion.span
+                                className="absolute -top-2 -right-4 text-2xl"
+                                animate={{ opacity: [0, 1, 0], scale: [0.5, 1, 0.5] }}
+                                transition={{ duration: 1.2, repeat: Infinity, delay: 0.3 }}
+                            >
+                                ✨
+                            </motion.span>
+                        </div>
+                        <p className="text-muted-foreground animate-pulse">
+                            냥이가 집사님의 정보를 불러오고 있다냥...
+                        </p>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
             <div className="w-full max-w-4xl px-4 flex justify-between items-center mb-8">
                 <Link href="/" className="flex items-center text-muted-foreground hover:text-foreground transition-colors">
                     <ArrowLeft className="mr-2 h-4 w-4" /> 홈으로
@@ -125,24 +161,32 @@ export default function ReadingPage() {
                         <div className="w-full flex flex-col gap-4">
                             <div className="flex flex-col gap-1">
                                 <label className="text-sm text-muted-foreground font-medium">생년월일 <span className="text-accent">*</span></label>
-                                <input
-                                    type="date"
-                                    value={birthDate}
-                                    onChange={(e) => setBirthDate(e.target.value)}
-                                    max={new Date().toISOString().split("T")[0]}
-                                    min="1900-01-01"
-                                    className="w-full p-4 rounded-xl bg-secondary/5 border border-primary/20 focus:border-accent focus:ring-1 focus:ring-accent outline-none text-base text-foreground transition-all"
-                                />
+                                {profileLoading ? (
+                                    <div className="w-full h-[58px] rounded-xl bg-secondary/5 border border-primary/20 animate-pulse" />
+                                ) : (
+                                    <input
+                                        type="date"
+                                        value={birthDate}
+                                        onChange={(e) => setBirthDate(e.target.value)}
+                                        max={new Date().toISOString().split("T")[0]}
+                                        min="1900-01-01"
+                                        className="w-full p-4 rounded-xl bg-secondary/5 border border-primary/20 focus:border-accent focus:ring-1 focus:ring-accent outline-none text-base text-foreground transition-all"
+                                    />
+                                )}
                             </div>
 
                             <div className="flex flex-col gap-1">
                                 <label className="text-sm text-muted-foreground font-medium">태어난 시각 <span className="text-muted-foreground/60">(선택)</span></label>
-                                <input
-                                    type="time"
-                                    value={birthTime}
-                                    onChange={(e) => setBirthTime(e.target.value)}
-                                    className="w-full p-4 rounded-xl bg-secondary/5 border border-primary/20 focus:border-accent focus:ring-1 focus:ring-accent outline-none text-base text-foreground transition-all"
-                                />
+                                {profileLoading ? (
+                                    <div className="w-full h-[58px] rounded-xl bg-secondary/5 border border-primary/20 animate-pulse" />
+                                ) : (
+                                    <input
+                                        type="time"
+                                        value={birthTime}
+                                        onChange={(e) => setBirthTime(e.target.value)}
+                                        className="w-full p-4 rounded-xl bg-secondary/5 border border-primary/20 focus:border-accent focus:ring-1 focus:ring-accent outline-none text-base text-foreground transition-all"
+                                    />
+                                )}
                             </div>
 
                             <div className="flex flex-col gap-2">
