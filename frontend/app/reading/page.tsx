@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
 import { tarotCards, TarotCard } from "@/data/tarotCards";
@@ -9,6 +9,7 @@ import { shuffleArray } from "@/lib/shuffle";
 import Link from "next/link";
 import { ArrowLeft, Star, Send } from "lucide-react";
 import ReactMarkdown from "react-markdown";
+import { CatLoading } from "@/components/ui/CatLoading";
 
 type Step = "input" | "shuffling" | "picking" | "analyzing" | "result";
 
@@ -25,12 +26,12 @@ export default function ReadingPage() {
     useEffect(() => {
         supabase.auth.getSession().then(async ({ data: { session } }) => {
             if (!session) { setProfileLoading(false); return; }
+            type Profile = { birth_date: string | null; birth_time: string | null };
             const { data } = await supabase
                 .from("profiles")
                 .select("birth_date, birth_time")
                 .eq("id", session.user.id)
-                .single();
-            // TODO: 테스트용 딜레이 — 확인 후 제거
+                .single() as { data: Profile | null; error: unknown };
             if (data?.birth_date) setBirthDate(data.birth_date);
             if (data?.birth_time) setBirthTime(data.birth_time);
             setProfileLoading(false);
@@ -97,37 +98,7 @@ export default function ReadingPage() {
     return (
         <div className="relative flex flex-col items-center min-h-[80vh] py-8">
 
-            <AnimatePresence>
-                {profileLoading && (
-                    <motion.div
-                        key="profile-loading"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-6 bg-background/80 backdrop-blur-sm"
-                    >
-                        <div className="relative text-6xl">
-                            <motion.span
-                                animate={{ rotate: [0, -15, 15, -15, 0] }}
-                                transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
-                                className="inline-block"
-                            >
-                                🐱
-                            </motion.span>
-                            <motion.span
-                                className="absolute -top-2 -right-4 text-2xl"
-                                animate={{ opacity: [0, 1, 0], scale: [0.5, 1, 0.5] }}
-                                transition={{ duration: 1.2, repeat: Infinity, delay: 0.3 }}
-                            >
-                                ✨
-                            </motion.span>
-                        </div>
-                        <p className="text-muted-foreground animate-pulse">
-                            냥이가 집사님의 정보를 불러오고 있다냥...
-                        </p>
-                    </motion.div>
-                )}
-            </AnimatePresence>
+            <CatLoading loading={profileLoading} message="냥이가 집사님의 정보를 불러오고 있다냥..." />
 
             <div className="w-full max-w-4xl px-4 flex justify-between items-center mb-8">
                 <Link href="/" className="flex items-center text-muted-foreground hover:text-foreground transition-colors">
@@ -143,7 +114,7 @@ export default function ReadingPage() {
             </div>
 
             <AnimatePresence mode="wait">
-                {step === "input" && (
+                {step === "input" ? (
                     <motion.div
                         key="input"
                         initial={{ opacity: 0, y: 20 }}
@@ -223,11 +194,9 @@ export default function ReadingPage() {
                             <Send className="w-5 h-5" /> 상담 시작하기
                         </button>
                     </motion.div>
-                )}
+                ) : null}
 
-
-
-                {step === "picking" && (
+                {step === "picking" ? (
                     <motion.div
                         key="picking"
                         initial={{ opacity: 0 }}
@@ -345,9 +314,9 @@ export default function ReadingPage() {
                             })}
                         </div>
                     </motion.div>
-                )}
+                ) : null}
 
-                {step === "analyzing" && (
+                {step === "analyzing" ? (
                     <motion.div
                         key="analyzing"
                         initial={{ opacity: 0 }}
@@ -366,9 +335,9 @@ export default function ReadingPage() {
                             {question}... 조용히 들여다보는 중이다 냥.
                         </p>
                     </motion.div>
-                )}
+                ) : null}
 
-                {step === "result" && (
+                {step === "result" ? (
                     <div className="w-full max-w-4xl animate-in fade-in slide-in-from-bottom duration-700">
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
                             {selectedCards.map((card, idx) => (
@@ -408,7 +377,7 @@ export default function ReadingPage() {
                             </Link>
                         </div>
                     </div>
-                )}
+                ) : null}
             </AnimatePresence>
         </div>
     );
