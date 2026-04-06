@@ -3,9 +3,9 @@ import { logger } from '../logger/logger';
 
 // MongoDB 연결 함수 — 서버 시작 시 한 번 호출
 export const connectMongoDB = async (): Promise<void> => {
-    const uri = process.env.MONGODB_URI;
+    const uri = process.env.MONGODB_URL;
     if (!uri) {
-        logger.warn('MONGODB_URI 미설정 — MongoDB 연결을 건너뜁니다.');
+        logger.warn('MONGODB_URL 미설정 — MongoDB 연결을 건너뜁니다.');
         return;
     }
 
