@@ -13,32 +13,35 @@
   --color-accent-foreground: var(--accent-foreground);
   --color-muted-foreground: var(--muted-foreground);
 
-  --font-sans: var(--font-nanum-gothic);
-  --font-mono: var(--font-geist-mono);
   --color-border: var(--border);
-  --font-serif: var(--font-noto-serif-kr);
 
   --animate-accordion-down: accordion-down 0.2s ease-out;
   --animate-accordion-up: accordion-up 0.2s ease-out;
+}
 
-  @keyframes accordion-down {
-    from {
-      height: 0
-    }
+/* noinspection CssUnresolvedCustomProperty */
+@theme inline {
+  --font-sans: var(--font-nanum-gothic);
+  --font-serif: var(--font-noto-serif-kr);
+}
 
-    to {
-      height: var(--radix-accordion-content-height)
-    }
+@keyframes accordion-down {
+  from {
+    height: 0
   }
 
-  @keyframes accordion-up {
-    from {
-      height: var(--radix-accordion-content-height)
-    }
+  to {
+    height: var(--radix-accordion-content-height)
+  }
+}
 
-    to {
-      height: 0
-    }
+@keyframes accordion-up {
+  from {
+    height: var(--radix-accordion-content-height)
+  }
+
+  to {
+    height: 0
   }
 }
 

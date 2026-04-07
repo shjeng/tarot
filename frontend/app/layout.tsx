@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Nanum_Gothic, Geist_Mono, Noto_Serif_KR } from "next/font/google";
+import { Nanum_Gothic, Noto_Serif_KR } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
 import { Header } from "@/components/layout/Header";
@@ -11,18 +11,16 @@ const GA_MEASUREMENT_ID = "G-EDEWNTEKQD";
 const nanumGothic = Nanum_Gothic({
   variable: "--font-nanum-gothic",
   subsets: ["latin"],
-  weight: ["400", "700", "800"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+  weight: ["400", "700"],
+  display: "swap",
 });
 
 const notoSerifKr = Noto_Serif_KR({
   variable: "--font-noto-serif-kr",
   subsets: ["latin"],
   weight: ["400", "700"],
+  display: "swap",
+  preload: false,
 });
 
 export const metadata: Metadata = {
@@ -53,7 +51,7 @@ export default function RootLayout({
         </Script>
       </head>
       <body
-        className={`${nanumGothic.variable} ${geistMono.variable} ${notoSerifKr.variable} antialiased min-h-screen flex flex-col bg-background text-foreground`}
+        className={`${nanumGothic.variable} ${notoSerifKr.variable} antialiased min-h-screen flex flex-col bg-background text-foreground`}
       >
         <Header />
         <main className="flex-1 container mx-auto px-4 py-8">
