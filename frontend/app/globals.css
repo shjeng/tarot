@@ -22,7 +22,7 @@
 /* noinspection CssUnresolvedCustomProperty */
 @theme inline {
   --font-sans: var(--font-nanum-gothic);
-  --font-serif: var(--font-noto-serif-kr);
+  --font-serif: 'Noto Serif KR', serif;
 }
 
 @keyframes accordion-down {
