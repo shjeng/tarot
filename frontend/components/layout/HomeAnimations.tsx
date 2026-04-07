@@ -1,16 +1,8 @@
-"use client";
-
-import { motion } from "framer-motion";
 import { Cat, Star } from "lucide-react";
 
 export default function HomeAnimations() {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.8 }}
-      className="space-y-4"
-    >
+    <div className="space-y-4 animate-fade-in">
       <div className="flex justify-center mb-6">
         <div className="relative">
           <Cat className="w-12 h-12 text-secondary animate-pulse" />
@@ -23,6 +15,6 @@ export default function HomeAnimations() {
       <p className="text-muted-foreground text-lg md:text-xl max-w-lg mx-auto break-keep">
         별빛이 흐르는 밤, 냥이가 점을 봐드린다냥.
       </p>
-    </motion.div>
+    </div>
   );
 }
