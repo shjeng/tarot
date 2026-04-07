@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Cat, Moon, Star } from "lucide-react";
+import { Moon, Star } from "lucide-react";
 import HomeAnimations from "@/components/layout/HomeAnimations";
 
 export default function Home() {

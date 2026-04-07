@@ -29,25 +29,6 @@ export default function RootLayout({
   return (
     <html lang="ko" suppressHydrationWarning>
       <head>
-        {/* Noto Serif KR: 렌더 블로킹 방지를 위해 비동기 로드 */}
-        <link
-          rel="preload"
-          as="style"
-          href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;700&display=swap"
-        />
-        <link
-          rel="stylesheet"
-          href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;700&display=swap"
-          media="print"
-          // @ts-ignore
-          onLoad="this.onload=null;this.media='all'"
-        />
-        <noscript>
-          <link
-            rel="stylesheet"
-            href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;700&display=swap"
-          />
-        </noscript>
         {/* Google Analytics 스크립트 로드 (afterInteractive: 페이지 로드 후 실행) */}
         <Script
           src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}
@@ -59,6 +40,15 @@ export default function RootLayout({
             function gtag(){dataLayer.push(arguments);}
             gtag('js', new Date());
             gtag('config', '${GA_MEASUREMENT_ID}');
+          `}
+        </Script>
+        {/* Noto Serif KR: 장식용 폰트, 페이지 인터랙션 후 비동기 로드 */}
+        <Script id="noto-serif-font" strategy="afterInteractive">
+          {`
+            var link = document.createElement('link');
+            link.rel = 'stylesheet';
+            link.href = 'https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;700&display=swap';
+            document.head.appendChild(link);
           `}
         </Script>
       </head>
