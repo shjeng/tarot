@@ -10,13 +10,14 @@ import { createUserClient } from '../lib/supabase';
  */
 const saveHistory = async (
     accessToken: string,
+    userId: string,
     type: 'daily' | 'spread',
     requestData: object,
     reading: string,
 ): Promise<void> => {
     const { error } = await createUserClient(accessToken)
         .from('reading_histories')
-        .insert({ type, request_data: requestData, reading });
+        .insert({ user_id: userId, type, request_data: requestData, reading });
     if (error) {
         logger.error('reading_histories DB 저장 실패', { error: error.message });
     }
@@ -61,7 +62,7 @@ export const getDailyTarot = async (req: DailyTarotRequest, res: Response): Prom
         // 로그인한 사용자인 경우에만 히스토리 저장 (optionalAuth 미들웨어에서 req.user 설정됨)
         if (req.user) {
             const token = req.headers.authorization!.slice(7);
-            await saveHistory(token, 'daily', { card }, reading);
+            await saveHistory(token, req.user.id, 'daily', { card }, reading);
         }
 
         res.json({ reading });
@@ -170,7 +171,7 @@ export const getSpreadTarot = async (req: SpreadTarotRequest, res: Response): Pr
 
         // spread는 requireAuth로 보호되므로 토큰이 항상 존재함
         const token = req.headers.authorization!.slice(7);
-        await saveHistory(token, 'spread', { cards, question, birthDate, birthTime, gender }, reading);
+        await saveHistory(token, req.user!.id, 'spread', { cards, question, birthDate, birthTime, gender }, reading);
 
         res.json({ reading });
     } catch (error) {

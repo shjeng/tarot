@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Nanum_Gothic, Geist_Mono, Noto_Serif_KR } from "next/font/google";
+import { Nanum_Gothic } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
 import { Header } from "@/components/layout/Header";
@@ -11,18 +11,9 @@ const GA_MEASUREMENT_ID = "G-EDEWNTEKQD";
 const nanumGothic = Nanum_Gothic({
   variable: "--font-nanum-gothic",
   subsets: ["latin"],
-  weight: ["400", "700", "800"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
-
-const notoSerifKr = Noto_Serif_KR({
-  variable: "--font-noto-serif-kr",
-  subsets: ["latin"],
   weight: ["400", "700"],
+  display: "swap",
+  preload: false,
 });
 
 export const metadata: Metadata = {
@@ -51,9 +42,18 @@ export default function RootLayout({
             gtag('config', '${GA_MEASUREMENT_ID}');
           `}
         </Script>
+        {/* Noto Serif KR: 장식용 폰트, 페이지 인터랙션 후 비동기 로드 */}
+        <Script id="noto-serif-font" strategy="afterInteractive">
+          {`
+            var link = document.createElement('link');
+            link.rel = 'stylesheet';
+            link.href = 'https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;700&display=swap';
+            document.head.appendChild(link);
+          `}
+        </Script>
       </head>
       <body
-        className={`${nanumGothic.variable} ${geistMono.variable} ${notoSerifKr.variable} antialiased min-h-screen flex flex-col bg-background text-foreground`}
+        className={`${nanumGothic.variable} antialiased min-h-screen flex flex-col bg-background text-foreground`}
       >
         <Header />
         <main className="flex-1 container mx-auto px-4 py-8">
