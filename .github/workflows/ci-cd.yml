@@ -179,6 +179,8 @@ jobs:
             cd ..
 
             echo "=== 서비스 재시작 ==="
+            # pm2 외 수동 실행된 잔여 프로세스가 포트를 점유하고 있을 경우 강제 종료
+            fuser -k 5000/tcp || true
             # --cwd 옵션으로 실행 디렉토리를 명시 → dotenv가 올바른 위치의 .env를 찾음
             pm2 restart tarot-backend || pm2 start /opt/tarot/backend/dist/server.js --name tarot-backend --cwd /opt/tarot/backend
             # 프론트엔드 Next.js 서버 재시작 (없으면 신규 등록)
