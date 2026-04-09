@@ -25,6 +25,10 @@ export const requestLogger = (req: Request, res: Response, next: NextFunction): 
         },
         () => {
             res.on('finish', () => {
+                // auth 미들웨어 실행 후 req.user가 채워지므로 여기서 context에 반영
+                const ctx = requestContext.getStore();
+                if (ctx) ctx.userId = req.user?.id ?? null;
+
                 const durationMs = Date.now() - startTime;
                 const level = res.statusCode >= 500 ? 'error' : 'info';
 
