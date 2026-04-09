@@ -55,10 +55,22 @@ if (isDev) {
     transports.push(new winston.transports.Console({ format: consoleFormat }));
 } else {
     transports.push(
+        // 전체 로그 (info 이상)
         new DailyRotateFile({
             dirname: logDir,
             filename: '%DATE%.log',
             datePattern: 'YYYY-MM-DD',
+            zippedArchive: true,
+            maxFiles: '180d',
+            maxSize: '50m',
+            format: jsonFormat,
+        }),
+        // 에러 전용 로그
+        new DailyRotateFile({
+            dirname: logDir,
+            filename: '%DATE%.error.log',
+            datePattern: 'YYYY-MM-DD',
+            level: 'error',
             zippedArchive: true,
             maxFiles: '180d',
             maxSize: '50m',
