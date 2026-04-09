@@ -207,6 +207,8 @@ export const getMyHistory = async (req: Request, res: Response): Promise<void> =
             logger.error('reading_histories 조회 실패', { error: error.message });
             res.status(500).json({ error: '히스토리 조회 실패' });
             return;
+        } else {
+            logger.info('reading_histories');
         }
 
         res.json({ histories: data, total: count ?? 0, limit, offset });
