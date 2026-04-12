@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import type { User } from "@supabase/supabase-js";
+import { ShareButton } from "@/components/ui/ShareButton";
 
 // ─── 타입 ────────────────────────────────────────────────────────────────────
 
@@ -102,9 +103,16 @@ function HistoryCard({ item, index }: { item: History; index: number }) {
           )}
         </div>
 
-        {/* 펼치기 화살표 */}
-        <div className={`flex-shrink-0 mt-1 text-muted-foreground transition-transform duration-300 ${open ? "rotate-180" : ""}`}>
-          <ChevronDown className="w-4 h-4" />
+        {/* 공유 버튼 + 펼치기 화살표 */}
+        <div className="flex-shrink-0 flex items-center gap-1 mt-0.5">
+          <ShareButton
+            historyId={item.id}
+            variant="icon"
+            className="opacity-0 group-hover:opacity-100 focus:opacity-100"
+          />
+          <div className={`text-muted-foreground transition-transform duration-300 ${open ? "rotate-180" : ""}`}>
+            <ChevronDown className="w-4 h-4" />
+          </div>
         </div>
       </button>
 

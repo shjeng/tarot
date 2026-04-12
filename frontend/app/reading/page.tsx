@@ -10,6 +10,7 @@ import Link from "next/link";
 import { ArrowLeft, Star, Send } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { CatLoading } from "@/components/ui/CatLoading";
+import { ShareButton } from "@/components/ui/ShareButton";
 
 type Step = "input" | "shuffling" | "picking" | "analyzing" | "result";
 
@@ -40,6 +41,7 @@ export default function ReadingPage() {
     const [cards, setCards] = useState<TarotCard[]>([]);
     const [selectedCards, setSelectedCards] = useState<TarotCard[]>([]);
     const [readingResult, setReadingResult] = useState<string>("");
+    const [historyId, setHistoryId] = useState<string | null>(null);
 
     const startReading = () => {
         if (!question.trim() || !birthDate || !gender) return;
@@ -82,6 +84,7 @@ export default function ReadingPage() {
             const data = await response.json();
             if (data.reading) {
                 setReadingResult(data.reading);
+                if (data.historyId) setHistoryId(data.historyId);
                 setStep("result");
             } else {
                 console.error("API Error", data);
@@ -371,10 +374,11 @@ export default function ReadingPage() {
                             </div>
                         </div>
 
-                        <div className="flex justify-center mt-12 mb-8">
+                        <div className="flex justify-center items-center gap-4 mt-12 mb-8">
                             <Link href="/" className="px-8 py-3 rounded-full border border-primary text-primary hover:bg-primary hover:text-white transition-all">
                                 다른 고민도 알려달라냥
                             </Link>
+                            <ShareButton historyId={historyId} fallbackText={readingResult} />
                         </div>
                     </div>
                 ) : null}

@@ -8,6 +8,7 @@ import { shuffleArray } from "@/lib/shuffle";
 import { createClient } from "@/lib/supabase/client";
 import Link from "next/link";
 import { ArrowLeft, RotateCcw, Moon } from "lucide-react";
+import { ShareButton } from "@/components/ui/ShareButton";
 
 type Step = "intro" | "picking" | "analyzing" | "result";
 
@@ -17,6 +18,7 @@ export default function DailyPage() {
     const [selectedCard, setSelectedCard] = useState<TarotCard | null>(null);
     const [isFlipped, setIsFlipped] = useState(false);
     const [readingResult, setReadingResult] = useState<string>("");
+    const [historyId, setHistoryId] = useState<string | null>(null);
     const supabase = useMemo(() => createClient(), []);
 
     const startShuffle = () => {
@@ -41,6 +43,7 @@ export default function DailyPage() {
             });
             const data = await response.json();
             setReadingResult(data.reading || card.desc);
+            if (data.historyId) setHistoryId(data.historyId);
         } catch {
             setReadingResult(card.desc);
         }
@@ -55,6 +58,7 @@ export default function DailyPage() {
         setIsFlipped(false);
         setCards([]);
         setReadingResult("");
+        setHistoryId(null);
     };
 
     return (
@@ -203,14 +207,18 @@ export default function DailyPage() {
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
                                 transition={{ delay: 1.5 }}
-                                className="mt-4"
+                                className="mt-4 flex items-center gap-3 mx-auto md:mx-0"
                             >
                                 <button
                                     onClick={reset}
-                                    className="flex items-center gap-2 px-6 py-2 rounded-lg border border-primary/50 hover:bg-primary/10 transition-colors mx-auto md:mx-0"
+                                    className="flex items-center gap-2 px-6 py-2 rounded-lg border border-primary/50 hover:bg-primary/10 transition-colors"
                                 >
                                     <RotateCcw className="w-4 h-4" /> 다시 뽑기
                                 </button>
+                                <ShareButton
+                                    historyId={historyId}
+                                    fallbackText={readingResult}
+                                />
                             </motion.div>
                         </div>
                     </motion.div>

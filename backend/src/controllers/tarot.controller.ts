@@ -1,26 +1,32 @@
 import { Request, Response } from 'express';
+import { randomUUID } from 'crypto';
 import { generateDailyReading, generateSpreadReading, CardInput, SpreadReadingOptions } from '../services/gemini.service';
 import { logger } from '../logger/logger';
-import { createUserClient } from '../lib/supabase';
+import { createUserClient, supabase } from '../lib/supabase';
 
 /**
  * 유저 JWT로 생성한 Supabase 클라이언트로 히스토리를 저장한다.
  * RLS가 정상 동작하므로 service_role key 없이도 자기 자신 데이터에 접근 가능하다.
  * 저장 실패 시 에러를 던지지 않고 로그만 남긴다 (히스토리 저장 실패가 리딩 응답에 영향을 주지 않도록).
  */
+// 히스토리 저장 후 생성된 ID를 반환 (실패 시 null)
 const saveHistory = async (
     accessToken: string,
     userId: string,
     type: 'daily' | 'spread',
     requestData: object,
     reading: string,
-): Promise<void> => {
-    const { error } = await createUserClient(accessToken)
+): Promise<string | null> => {
+    const { data, error } = await createUserClient(accessToken)
         .from('reading_histories')
-        .insert({ user_id: userId, type, request_data: requestData, reading });
+        .insert({ user_id: userId, type, request_data: requestData, reading })
+        .select('id')
+        .single();
     if (error) {
         logger.error('reading_histories DB 저장 실패', { error: error.message });
+        return null;
     }
+    return data?.id ?? null;
 };
 
 // 일일 운세 요청 body 타입
@@ -60,12 +66,13 @@ export const getDailyTarot = async (req: DailyTarotRequest, res: Response): Prom
         const reading = await generateDailyReading(card);
 
         // 로그인한 사용자인 경우에만 히스토리 저장 (optionalAuth 미들웨어에서 req.user 설정됨)
+        let historyId: string | null = null;
         if (req.user) {
             const token = req.headers.authorization!.slice(7);
-            await saveHistory(token, req.user.id, 'daily', { card }, reading);
+            historyId = await saveHistory(token, req.user.id, 'daily', { card }, reading);
         }
 
-        res.json({ reading });
+        res.json({ reading, historyId });
     } catch (error) {
         const err = error instanceof Error ? error : new Error(String(error));
         logger.error('getDailyTarot failed', { error: { message: err.message, stack: err.stack } });
@@ -171,9 +178,9 @@ export const getSpreadTarot = async (req: SpreadTarotRequest, res: Response): Pr
 
         // spread는 requireAuth로 보호되므로 토큰이 항상 존재함
         const token = req.headers.authorization!.slice(7);
-        await saveHistory(token, req.user!.id, 'spread', { cards, question, birthDate, birthTime, gender }, reading);
+        const historyId = await saveHistory(token, req.user!.id, 'spread', { cards, question, birthDate, birthTime, gender }, reading);
 
-        res.json({ reading });
+        res.json({ reading, historyId });
     } catch (error) {
         const err = error instanceof Error ? error : new Error(String(error));
         logger.error('getSpreadTarot failed', { error: { message: err.message, stack: err.stack } });
@@ -216,5 +223,81 @@ export const getMyHistory = async (req: Request, res: Response): Promise<void> =
         const err = error instanceof Error ? error : new Error(String(error));
         logger.error('getMyHistory failed', { error: { message: err.message, stack: err.stack } });
         res.status(500).json({ error: '히스토리 조회 실패' });
+    }
+};
+
+/**
+ * POST /tarot/history/:id/share
+ * 본인 소유의 리딩 이력에 share_token을 생성하고 반환한다.
+ * 이미 share_token이 있으면 기존 값을 반환한다 (멱등성 보장).
+ */
+export const createShareToken = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const { id } = req.params;
+        const token = req.headers.authorization!.slice(7);
+        const userClient = createUserClient(token);
+
+        // 본인 소유 여부 확인 (RLS가 다른 사용자의 데이터를 자동 차단)
+        const { data: existing, error } = await userClient
+            .from('reading_histories')
+            .select('id, share_token')
+            .eq('id', id)
+            .single();
+
+        if (error || !existing) {
+            res.status(404).json({ error: '이력을 찾을 수 없습니다.' });
+            return;
+        }
+
+        // 이미 share_token이 있으면 재사용
+        const shareToken = existing.share_token ?? randomUUID();
+
+        if (!existing.share_token) {
+            const { error: updateError } = await userClient
+                .from('reading_histories')
+                .update({ share_token: shareToken })
+                .eq('id', id);
+
+            if (updateError) {
+                logger.error('share_token 저장 실패', { error: updateError.message });
+                res.status(500).json({ error: '공유 링크 생성 실패' });
+                return;
+            }
+        }
+
+        res.json({ shareToken });
+    } catch (error) {
+        const err = error instanceof Error ? error : new Error(String(error));
+        logger.error('createShareToken failed', { error: { message: err.message, stack: err.stack } });
+        res.status(500).json({ error: '공유 링크 생성 실패' });
+    }
+};
+
+/**
+ * GET /tarot/share/:token
+ * 공유 토큰으로 리딩 데이터를 조회한다 (인증 불필요).
+ * 민감 정보(user_id 등)는 제외하고 반환한다.
+ */
+export const getSharedReading = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const { token } = req.params;
+
+        // anon key 클라이언트로 조회 — Supabase RLS "공유 토큰으로 조회" 정책이 허용
+        const { data, error } = await supabase
+            .from('reading_histories')
+            .select('type, request_data, reading, created_at')
+            .eq('share_token', token)
+            .single();
+
+        if (error || !data) {
+            res.status(404).json({ error: '공유된 리딩을 찾을 수 없습니다.' });
+            return;
+        }
+
+        res.json(data);
+    } catch (error) {
+        const err = error instanceof Error ? error : new Error(String(error));
+        logger.error('getSharedReading failed', { error: { message: err.message, stack: err.stack } });
+        res.status(500).json({ error: '공유 리딩 조회 실패' });
     }
 };
