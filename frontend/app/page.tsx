@@ -1,6 +1,15 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { Moon, Star } from "lucide-react";
 import HomeAnimations from "@/components/layout/HomeAnimations";
+
+// 홈 페이지 개별 메타데이터 — 루트 layout의 template 적용됨
+export const metadata: Metadata = {
+  title: "고양이 점술관 | AI 타로 · 사주타로 · 오늘의 운세",
+  description:
+    "AI 고양이가 타로 카드와 사주로 오늘의 운세를 풀어드립니다. 무료 AI 타로 리딩, 사주타로, 오늘의 타로 카드 운세를 지금 바로 확인하세요.",
+  alternates: { canonical: "https://necessitycat.com" },
+};
 
 export default function Home() {
   return (

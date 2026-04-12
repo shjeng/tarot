@@ -17,8 +17,69 @@ const nanumGothic = Nanum_Gothic({
 });
 
 export const metadata: Metadata = {
-  title: "고양이 점술관 - AI 타로 리딩",
-  description: "별빛이 흐르는 밤, 고양이가 당신의 운명을 읽어드립니다.",
+  // 사이트 기본 타이틀 — 키워드 포함
+  title: {
+    default: "고양이 점술관 | AI 타로 · 사주타로 · 오늘의 운세",
+    template: "%s | 고양이 점술관",
+  },
+  description:
+    "AI 고양이가 타로 카드와 사주로 오늘의 운세를 풀어드립니다. 무료 AI 타로 리딩, 사주타로, 오늘의 타로 카드 운세를 지금 바로 확인하세요.",
+  keywords: [
+    "타로",
+    "사주타로",
+    "AI 타로",
+    "오늘의 운세",
+    "타로 리딩",
+    "무료 타로",
+    "사주",
+    "타로 카드",
+    "운세",
+    "AI 운세",
+    "고양이 타로",
+  ],
+  authors: [{ name: "고양이 점술관" }],
+  // 구글·네이버 크롤링 허용
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: { index: true, follow: true },
+  },
+  // Open Graph — SNS 공유 미리보기
+  openGraph: {
+    type: "website",
+    locale: "ko_KR",
+    url: "https://necessitycat.com",
+    siteName: "고양이 점술관",
+    title: "고양이 점술관 | AI 타로 · 사주타로 · 오늘의 운세",
+    description:
+      "AI 고양이가 타로 카드와 사주로 오늘의 운세를 풀어드립니다. 무료 AI 타로 리딩, 사주타로 상담을 지금 바로 확인하세요.",
+    images: [
+      {
+        url: "https://necessitycat.com/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "고양이 점술관 - AI 타로 · 사주타로",
+      },
+    ],
+  },
+  // Twitter(X) 카드
+  twitter: {
+    card: "summary_large_image",
+    title: "고양이 점술관 | AI 타로 · 사주타로 · 오늘의 운세",
+    description:
+      "AI 고양이가 타로 카드와 사주로 오늘의 운세를 풀어드립니다.",
+    images: ["https://necessitycat.com/og-image.png"],
+  },
+  // 정식 URL
+  alternates: {
+    canonical: "https://necessitycat.com",
+  },
+  // 네이버 사이트 소유 확인
+  verification: {
+    other: {
+      "naver-site-verification": "00188b37059a260278f795be47f1ab0da77734f1",
+    },
+  },
 };
 
 export default function RootLayout({
@@ -51,6 +112,26 @@ export default function RootLayout({
             document.head.appendChild(link);
           `}
         </Script>
+        {/* JSON-LD 구조화 데이터 — 구글 리치 결과용 */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "WebSite",
+              name: "고양이 점술관",
+              url: "https://necessitycat.com",
+              description:
+                "AI 고양이가 타로 카드와 사주로 오늘의 운세를 풀어드립니다.",
+              inLanguage: "ko",
+              potentialAction: {
+                "@type": "SearchAction",
+                target: "https://necessitycat.com/?q={search_term_string}",
+                "query-input": "required name=search_term_string",
+              },
+            }),
+          }}
+        />
       </head>
       <body
         className={`${nanumGothic.variable} antialiased min-h-screen flex flex-col bg-background text-foreground`}
