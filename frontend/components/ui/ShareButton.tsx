@@ -30,7 +30,7 @@ export function ShareButton({ historyId, fallbackText, className = "", variant =
     let copied = false;
     try {
       let shareUrl: string | null = null;
-      let shareText: string | null = fallbackText ?? null;
+      const shareText: string | null = fallbackText ?? null;
 
       // 히스토리 ID가 있으면 공유 링크 생성
       if (historyId) {
