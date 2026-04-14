@@ -19,6 +19,13 @@ export default function Home() {
 
       <HomeAnimations />
 
+      {/* 서비스 소개 — 로그인 없이 누구나 볼 수 있는 앱 목적 설명 */}
+      <p className="text-sm text-muted-foreground max-w-md px-4 break-keep">
+        고양이 점술관은 AI가 타로 카드와 사주를 해석해 오늘의 운세를 알려주는
+        무료 점술 서비스입니다. 회원가입 없이도 둘러볼 수 있으며, 로그인 시
+        나만의 타로 리딩 기록을 저장할 수 있습니다.
+      </p>
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-2xl px-4">
         <Link href="/daily" className="group relative overflow-hidden rounded-md border border-primary/20 bg-background/50 hover:bg-primary/10 transition-all p-8 flex flex-col items-center gap-4 hover:border-primary/50 hover:shadow-lg hover:shadow-primary/20">
           <div className="p-4 rounded-full bg-primary/10 group-hover:bg-primary/20 transition-colors">
@@ -34,6 +41,16 @@ export default function Home() {
           </div>
           <h2 className="text-2xl font-bold group-hover:text-accent transition-colors">고양이 타로 상담</h2>
           <p className="text-sm text-muted-foreground">요즘은 어떤 고민이 있느냥?</p>
+        </Link>
+      </div>
+
+      {/* 개인정보처리방침 링크 — 구글 OAuth 브랜딩 심사 요건 */}
+      <div className="flex gap-4 text-xs text-muted-foreground">
+        <Link href="/terms" className="hover:text-foreground transition-colors">
+          이용약관
+        </Link>
+        <Link href="/privacy" className="hover:text-foreground transition-colors">
+          개인정보처리방침
         </Link>
       </div>
     </div>
