@@ -1,4 +1,5 @@
 import { Cat } from 'lucide-react';
+import Link from 'next/link';
 
 export function Footer() {
     return (
@@ -8,7 +9,14 @@ export function Footer() {
                     <Cat className="h-3.5 w-3.5" />
                     © 2026 고양이 점술관. All rights reserved.
                 </p>
-                <div className="flex gap-4">
+                <div className="flex items-center gap-4">
+                    {/* 이용약관 및 개인정보처리방침 링크 */}
+                    <Link href="/terms" className="text-xs text-muted-foreground hover:text-foreground transition-colors">
+                        이용약관
+                    </Link>
+                    <Link href="/privacy" className="text-xs text-muted-foreground hover:text-foreground transition-colors">
+                        개인정보처리방침
+                    </Link>
                     <span className="text-xs text-muted-foreground">ghsmsl20@gmail.com</span>
                 </div>
             </div>
