@@ -47,21 +47,12 @@ export function ShareButton({ historyId, fallbackText, className = "", variant =
         }
       }
 
-      // Web Share API 시도
-      if (navigator.share) {
-        await navigator.share({
-          title: "고양이 점술관 타로 리딩",
-          ...(shareUrl ? { url: shareUrl } : {}),
-          ...(shareText && !shareUrl ? { text: shareText } : {}),
-        });
-      } else {
-        // 클립보드 복사 폴백
-        const content = shareUrl ?? shareText ?? window.location.href;
-        await navigator.clipboard.writeText(content);
-        copied = true;
-        setStatus("copied");
-        setTimeout(() => setStatus("idle"), 2000);
-      }
+      // 클립보드 복사
+      const content = shareUrl ?? shareText ?? window.location.href;
+      await navigator.clipboard.writeText(content);
+      copied = true;
+      setStatus("copied");
+      setTimeout(() => setStatus("idle"), 2000);
     } catch {
       // 사용자가 취소하거나 오류 발생 시 무시
     } finally {
@@ -75,7 +66,7 @@ export function ShareButton({ historyId, fallbackText, className = "", variant =
         onClick={handleShare}
         disabled={status === "loading"}
         title="공유하기"
-        className={`flex items-center justify-center w-8 h-8 rounded-full border border-primary/20 hover:border-primary/50 hover:bg-primary/5 transition-all disabled:opacity-50 ${className}`}
+        className={`flex items-center justify-center w-8 h-8 rounded-full border border-primary/40 bg-primary/5 hover:border-primary/70 hover:bg-primary/15 transition-all disabled:opacity-50 ${className}`}
       >
         {status === "loading" ? (
           <Loader2 className="w-3.5 h-3.5 animate-spin text-muted-foreground" />
