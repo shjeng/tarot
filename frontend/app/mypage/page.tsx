@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import ReactMarkdown from "react-markdown";
 import {
   Cat, Star, Moon, ChevronDown,
@@ -11,6 +11,8 @@ import {
 import Link from "next/link";
 import type { User } from "@supabase/supabase-js";
 import { ShareButton } from "@/components/ui/ShareButton";
+import { Card } from "@/components/tarot/Card";
+import { tarotCards } from "@/data/tarotCards";
 
 // ─── 타입 ────────────────────────────────────────────────────────────────────
 
@@ -29,6 +31,10 @@ interface History {
   reading: string;
   created_at: string;
 }
+
+// 카드 이름으로 이미지 경로 조회
+const cardImageMap = new Map(tarotCards.map(c => [c.name, c.image]));
+const getCardImage = (name: string) => cardImageMap.get(name);
 
 // ─── 유틸 ────────────────────────────────────────────────────────────────────
 
@@ -95,12 +101,12 @@ function HistoryCard({ item, index }: { item: History; index: number }) {
           ) : null}
 
           {/* 카드명 */}
-          {cardNames && (
+          {cardNames ? (
             <p className="text-xs text-muted-foreground">
               <Star className="inline w-3 h-3 mr-1 text-secondary/60" />
               {cardNames}
             </p>
-          )}
+          ) : null}
         </div>
 
         {/* 공유 버튼 + 펼치기 화살표 */}
@@ -116,17 +122,41 @@ function HistoryCard({ item, index }: { item: History; index: number }) {
       </button>
 
       {/* 리딩 내용 — 아코디언 */}
-      <AnimatePresence initial={false}>
-        {open && (
-          <motion.div
-            key="content"
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.3, ease: "easeInOut" }}
-            className="overflow-hidden"
-          >
-            <div className="px-5 pb-6 pt-1 border-t border-primary/10">
+      <motion.div
+        initial={false}
+        animate={open ? { height: "auto", opacity: 1 } : { height: "0px", opacity: 0 }}
+        transition={{ duration: 0.3, ease: "easeInOut" }}
+        className="overflow-hidden"
+      >
+            <div className="px-5 pb-6 pt-4 border-t border-primary/10 space-y-5">
+              {/* 카드 이미지 */}
+              {(() => {
+                const cards = isSpread
+                  ? (item.request_data.cards ?? [])
+                  : item.request_data.card ? [item.request_data.card] : [];
+                const labels = isSpread ? ["과거", "현재", "미래"] : [];
+                return cards.length > 0 ? (
+                  <div className="flex justify-center gap-4 flex-wrap">
+                    {cards.map((c, idx) => (
+                      <div key={idx} className="flex flex-col items-center gap-1.5">
+                        <Card
+                          id={idx}
+                          frontImage={getCardImage(c.name)}
+                          name={c.nameKo}
+                          isFlipped={true}
+                          width={72}
+                          height={120}
+                        />
+                        {labels[idx] ? (
+                          <span className="text-[10px] text-muted-foreground tracking-wide">{labels[idx]}</span>
+                        ) : null}
+                        <span className="text-xs text-foreground/70 font-medium">{c.nameKo}</span>
+                      </div>
+                    ))}
+                  </div>
+                ) : null;
+              })()}
+              {/* 리딩 텍스트 */}
               <div className="prose prose-invert prose-sm max-w-none
                 prose-p:leading-relaxed prose-p:text-gray-300
                 prose-headings:text-primary-foreground prose-headings:font-serif
@@ -134,9 +164,7 @@ function HistoryCard({ item, index }: { item: History; index: number }) {
                 <ReactMarkdown>{item.reading}</ReactMarkdown>
               </div>
             </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      </motion.div>
     </motion.div>
   );
 }
@@ -280,7 +308,7 @@ export default function MyPage() {
           {/* 정보 */}
           <div className="flex-1 min-w-0 space-y-1">
             <h1 className="text-lg font-serif font-bold truncate">
-              {user?.email?.split("@")[0]}
+              {user?.email?.split("@")?.[0]}
             </h1>
             <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
             <div className="flex items-center gap-1 text-xs text-muted-foreground">
@@ -301,18 +329,13 @@ export default function MyPage() {
 
       {/* 이력 섹션 */}
       <div className="space-y-4">
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.2 }}
-          className="flex items-center gap-2"
-        >
+        <div className="flex items-center gap-2">
           <Star className="w-4 h-4 text-secondary" />
           <h2 className="font-serif font-bold text-base">별빛 아래 남겨진 기억들</h2>
-          {total > 0 && (
+          {total > 0 ? (
             <span className="ml-auto text-xs text-muted-foreground">{total}개</span>
-          )}
-        </motion.div>
+          ) : null}
+        </div>
 
         {histories.length === 0 ? (
           <EmptyState />
@@ -325,7 +348,7 @@ export default function MyPage() {
             </div>
 
             {/* 더 보기 버튼 */}
-            {hasMore && (
+            {hasMore ? (
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -349,7 +372,7 @@ export default function MyPage() {
                   )}
                 </button>
               </motion.div>
-            )}
+            ) : null}
           </>
         )}
       </div>
