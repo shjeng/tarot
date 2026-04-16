@@ -144,8 +144,8 @@ function HistoryCard({ item, index }: { item: History; index: number }) {
                           frontImage={getCardImage(c.name)}
                           name={c.nameKo}
                           isFlipped={true}
-                          width={72}
-                          height={120}
+                          width={96}
+                          height={160}
                         />
                         {labels[idx] ? (
                           <span className="text-[10px] text-muted-foreground tracking-wide">{labels[idx]}</span>
