@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Share2, Check, Loader2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { createPortal } from "react-dom";
 
 interface ShareButtonProps {
   // 로그인한 경우 공유 링크 생성에 사용할 히스토리 ID
@@ -11,6 +12,28 @@ interface ShareButtonProps {
   fallbackText?: string;
   className?: string;
   variant?: "icon" | "text";
+}
+
+// ─── 토스트 컴포넌트 ─────────────────────────────────────────────────────────
+
+function CopyToast({ visible }: { visible: boolean }) {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
+  if (!mounted) return null;
+
+  return createPortal(
+    <div
+      className={`fixed top-6 left-1/2 -translate-x-1/2 z-[9999] transition-all duration-300 ${
+        visible ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-2 pointer-events-none"
+      }`}
+    >
+      <div className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-foreground text-background text-sm font-medium shadow-lg">
+        <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
+        링크를 복사했다냥!
+      </div>
+    </div>,
+    document.body
+  );
 }
 
 /**
@@ -62,7 +85,9 @@ export function ShareButton({ historyId, fallbackText, className = "", variant =
 
   if (variant === "icon") {
     return (
-      <button
+      <>
+        <CopyToast visible={status === "copied"} />
+        <button
         onClick={handleShare}
         disabled={status === "loading"}
         title="공유하기"
@@ -76,23 +101,27 @@ export function ShareButton({ historyId, fallbackText, className = "", variant =
           <Share2 className="w-3.5 h-3.5 text-muted-foreground" />
         )}
       </button>
+      </>
     );
   }
 
   return (
-    <button
-      onClick={handleShare}
-      disabled={status === "loading"}
-      className={`flex items-center gap-2 px-4 py-2 rounded-lg border border-primary/30 text-sm text-muted-foreground hover:text-foreground hover:border-primary/60 hover:bg-primary/5 transition-all disabled:opacity-50 ${className}`}
-    >
-      {status === "loading" ? (
-        <Loader2 className="w-4 h-4 animate-spin" />
-      ) : status === "copied" ? (
-        <Check className="w-4 h-4 text-green-400" />
-      ) : (
-        <Share2 className="w-4 h-4" />
-      )}
-      {status === "copied" ? "링크 복사됨!" : "공유하기"}
-    </button>
+    <>
+      <CopyToast visible={status === "copied"} />
+      <button
+        onClick={handleShare}
+        disabled={status === "loading"}
+        className={`flex items-center gap-2 px-4 py-2 rounded-lg border border-primary/30 text-sm text-muted-foreground hover:text-foreground hover:border-primary/60 hover:bg-primary/5 transition-all disabled:opacity-50 ${className}`}
+      >
+        {status === "loading" ? (
+          <Loader2 className="w-4 h-4 animate-spin" />
+        ) : status === "copied" ? (
+          <Check className="w-4 h-4 text-green-400" />
+        ) : (
+          <Share2 className="w-4 h-4" />
+        )}
+        {status === "copied" ? "링크 복사됨!" : "공유하기"}
+      </button>
+    </>
   );
 }
