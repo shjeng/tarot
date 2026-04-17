@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { Cat } from "lucide-react";
 import { ShareContent, NotFoundContent } from "./ShareContent";
 import type { SharedReading } from "./types";
 
