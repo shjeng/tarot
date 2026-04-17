@@ -104,6 +104,12 @@ export default function RootLayout({
             gtag('config', '${GA_MEASUREMENT_ID}');
           `}
         </Script>
+        {/* Google AdSense */}
+        <Script
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4396377590347789"
+          strategy="afterInteractive"
+          crossOrigin="anonymous"
+        />
         {/* Noto Serif KR: 장식용 폰트, 페이지 인터랙션 후 비동기 로드 */}
         <Script id="noto-serif-font" strategy="afterInteractive">
           {`
