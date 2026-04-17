@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useSyncExternalStore } from "react";
 import { Share2, Check, Loader2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { createPortal } from "react-dom";
@@ -17,8 +17,7 @@ interface ShareButtonProps {
 // ─── 토스트 컴포넌트 ─────────────────────────────────────────────────────────
 
 function CopyToast({ visible }: { visible: boolean }) {
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => { setMounted(true); }, []);
+  const mounted = useSyncExternalStore(() => () => {}, () => true, () => false);
   if (!mounted) return null;
 
   return createPortal(
