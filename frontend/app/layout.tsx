@@ -55,7 +55,7 @@ export const metadata: Metadata = {
       "AI 고양이가 타로 카드와 사주로 오늘의 운세를 풀어드립니다. 무료 AI 타로 리딩, 사주타로 상담을 지금 바로 확인하세요.",
     images: [
       {
-        url: "https://necessitycat.com/og-image.png",
+        url: "https://necessitycat.com/meta_image.png",
         width: 1200,
         height: 630,
         alt: "고양이 점술관 - AI 타로 · 사주타로",
@@ -68,7 +68,7 @@ export const metadata: Metadata = {
     title: "고양이 점술관 | AI 타로 · 사주타로 · 오늘의 운세",
     description:
       "AI 고양이가 타로 카드와 사주로 오늘의 운세를 풀어드립니다.",
-    images: ["https://necessitycat.com/og-image.png"],
+    images: ["https://necessitycat.com/meta_image.png"],
   },
   // 정식 URL
   alternates: {
