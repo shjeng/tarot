@@ -1,62 +1,108 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { tarotCards, TarotCard } from "@/data/tarotCards";
 import { Card } from "@/components/tarot/Card";
-import { shuffleArray } from "@/lib/shuffle";
 import { createClient } from "@/lib/supabase/client";
 import Link from "next/link";
-import { ArrowLeft, RotateCcw, Moon } from "lucide-react";
+import { ArrowLeft, RotateCcw } from "lucide-react";
 import { ShareButton } from "@/components/ui/ShareButton";
 
-type Step = "intro" | "picking" | "analyzing" | "result";
+type Step = "intro" | "orb" | "result";
+
+const sleep = (ms: number) => new Promise<void>(resolve => setTimeout(resolve, ms));
 
 export default function DailyClient() {
     const [step, setStep] = useState<Step>("intro");
-    const [cards, setCards] = useState<TarotCard[]>([]);
     const [selectedCard, setSelectedCard] = useState<TarotCard | null>(null);
     const [isFlipped, setIsFlipped] = useState(false);
     const [readingResult, setReadingResult] = useState<string>("");
     const [historyId, setHistoryId] = useState<string | null>(null);
     const supabase = useMemo(() => createClient(), []);
+    const abortRef = useRef<AbortController | null>(null);
+    const isRunningRef = useRef(false);
 
-    const startShuffle = () => {
-        const shuffled = shuffleArray(tarotCards);
-        setCards(shuffled);
-        setStep("picking");
-    };
+    // 최소 거리 보장 알고리즘으로 22장 위치 고정 (리렌더 시 불변)
+    const cardPositions = useMemo(() => {
+        const positions: { x: number; y: number; r: number }[] = [];
+        const MIN_DIST = 12;
+        for (let i = 0; i < tarotCards.length; i++) {
+            let x: number, y: number;
+            let attempts = 0;
+            do {
+                x = 5 + ((i * 37 + 13 + attempts * 7) % 80);
+                y = 5 + ((i * 53 + 7 + attempts * 11) % 80);
+                attempts++;
+            } while (
+                attempts < 30 &&
+                positions.some(p => Math.hypot(p.x - x, p.y - y) < MIN_DIST)
+            );
+            positions.push({ x, y, r: -25 + ((i * 29) % 51) });
+        }
+        return positions;
+    }, []);
 
-    const handleCardPick = async (card: TarotCard) => {
-        setSelectedCard(card);
-        setStep("analyzing");
-
+    const fetchReading = async (card: TarotCard, signal: AbortSignal): Promise<void> => {
         try {
             const { data: { session } } = await supabase.auth.getSession();
             const response = await fetch("/api/tarot/daily", {
                 method: "POST",
+                signal,
                 headers: {
                     "Content-Type": "application/json",
                     ...(session ? { "Authorization": `Bearer ${session.access_token}` } : {}),
                 },
                 body: JSON.stringify({ card }),
             });
+            if (signal.aborted) return;
+            if (!response.ok) {
+                console.error("API error:", response.status);
+                setReadingResult(card.desc);
+                return;
+            }
             const data = await response.json();
             setReadingResult(data.reading || card.desc);
             if (data.historyId) setHistoryId(data.historyId);
-        } catch {
+        } catch (e) {
+            if (signal.aborted) return;
             setReadingResult(card.desc);
         }
-
-        setStep("result");
-        setTimeout(() => setIsFlipped(true), 100);
     };
 
+    const handleCardSelect = async (card: TarotCard) => {
+        if (isRunningRef.current) return;
+        isRunningRef.current = true;
+
+        const controller = new AbortController();
+        abortRef.current = controller;
+        setSelectedCard(card);
+
+        setStep("orb");
+
+        await Promise.all([
+            fetchReading(card, controller.signal),
+            sleep(1500),
+        ]).catch(() => []);
+
+        if (controller.signal.aborted) return;
+        setStep("result");
+        isRunningRef.current = false;
+    };
+
+    useEffect(() => {
+        if (step === "result") {
+            const t = setTimeout(() => setIsFlipped(true), 100);
+            return () => clearTimeout(t);
+        }
+    }, [step]);
+
     const reset = () => {
+        abortRef.current?.abort();
+        isRunningRef.current = false;
         setStep("intro");
         setSelectedCard(null);
         setIsFlipped(false);
-        setCards([]);
         setReadingResult("");
         setHistoryId(null);
     };
@@ -77,72 +123,117 @@ export default function DailyClient() {
                 {step === "intro" && (
                     <motion.div
                         key="intro"
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -20 }}
-                        className="flex flex-col items-center text-center gap-6"
-                    >
-                        <div className="p-8 rounded-full bg-primary/10 mb-4">
-                            <Moon className="w-16 h-16 text-primary" />
-                        </div>
-                        <h2 className="text-3xl font-bold">오늘 하루를 위한 조언</h2>
-                        <p className="text-muted-foreground max-w-md break-keep">
-                            눈을 살짝 감고 오늘을 생각해 보거라냥. <br />
-                            냥이가 카드 한 장으로 하루의 기운을 읽어드릴게냥.
-                        </p>
-                        <button
-                            onClick={startShuffle}
-                            className="mt-8 px-8 py-3 rounded-full bg-primary text-primary-foreground font-bold text-lg hover:bg-primary/90 transition-all shadow-lg hover:shadow-primary/40 transform hover:scale-105"
-                        >
-                            카드 셔플하기
-                        </button>
-                    </motion.div>
-                )}
-
-                {step === "picking" && (
-                    <motion.div
-                        key="picking"
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className="flex flex-col items-center gap-8 w-full"
+                        className="w-full max-w-4xl"
                     >
-                        <h2 className="text-2xl font-bold animate-pulse">이끌리는 카드를 한 장 골라보세냥</h2>
-                        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-4 max-w-6xl py-8 px-4">
-                            {cards.map((card, index) => (
-                                <motion.div
+                        <p className="text-center text-muted-foreground text-sm mb-4">
+                            이끌리는 카드를 한 장 골라보세냥 🐾
+                        </p>
+                        {/* velvet 테이블 */}
+                        <div
+                            className="relative w-full rounded-2xl overflow-hidden h-[320px] sm:h-[380px] md:h-[460px]"
+                            style={{
+                                background: "radial-gradient(ellipse at 50% 30%, #2d1b4e 0%, #1a0a2e 40%, #0d0718 100%)",
+                                boxShadow: "inset 0 0 80px rgba(0,0,0,0.6)",
+                            }}
+                        >
+                            {/* 비네트 오버레이 */}
+                            <div
+                                className="absolute inset-0 pointer-events-none"
+                                style={{
+                                    background: "radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.55) 100%)",
+                                }}
+                            />
+                            {/* 22장 카드 */}
+                            {tarotCards.map((card, i) => (
+                                <motion.button
                                     key={card.id}
-                                    initial={{ opacity: 0, scale: 0.8 }}
-                                    animate={{ opacity: 1, scale: 1 }}
-                                    transition={{ delay: index * 0.05 }}
-                                    className="cursor-pointer hover:-translate-y-2 hover:shadow-lg transition-transform duration-300"
-                                    onClick={() => handleCardPick(card)}
+                                    aria-label={`카드 ${i + 1} 선택`}
+                                    className="absolute focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-lg"
+                                    style={{
+                                        left: `${cardPositions[i].x}%`,
+                                        top: `${cardPositions[i].y}%`,
+                                        rotate: cardPositions[i].r,
+                                        translateX: "-50%",
+                                        translateY: "-50%",
+                                    }}
+                                    whileHover={{
+                                        y: -10,
+                                        scale: 1.1,
+                                        boxShadow: "0 0 20px rgba(139,92,246,0.6)",
+                                        zIndex: 50,
+                                        transition: { duration: 0.15 },
+                                    }}
+                                    onClick={() => handleCardSelect(card)}
                                 >
-                                    <Card id={card.id} />
-                                </motion.div>
+                                    <Card
+                                        id={card.id}
+                                        className="!w-[52px] !h-[84px] pointer-events-none"
+                                    />
+                                </motion.button>
                             ))}
                         </div>
-                        <p className="text-muted-foreground text-sm">마음이 닿는 카드가 있을 거냥.</p>
                     </motion.div>
                 )}
 
-                {step === "analyzing" && (
+                {step === "orb" && (
                     <motion.div
-                        key="analyzing"
+                        key="orb"
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
-                        className="flex flex-col items-center justify-center gap-8 py-20"
+                        exit={{ opacity: 0 }}
+                        className="flex flex-col items-center gap-8 py-8"
                     >
-                        <div className="relative w-32 h-32">
-                            <div className="absolute inset-0 rounded-full border-4 border-primary/30 animate-ping" />
-                            <div className="absolute inset-2 rounded-full border-4 border-accent/50 animate-spin" style={{ animationDuration: '3s' }} />
-                            <div className="absolute inset-0 flex items-center justify-center text-4xl">🔮</div>
-                        </div>
-                        <h2 className="text-2xl font-bold text-center">
+                        <p className="text-muted-foreground text-sm">
                             냥이가 카드를 읽고 있다냥...
-                        </h2>
-                        <p className="text-muted-foreground text-center animate-pulse">
-                            잠시만 기다려 달라냥.
+                        </p>
+
+                        {/* 수정구 */}
+                        <div className="relative flex items-center justify-center">
+                            {/* 외부 회전 링 */}
+                            <motion.div
+                                className="absolute rounded-full border border-violet-400/30"
+                                style={{ width: 240, height: 240 }}
+                                animate={{ rotate: 360 }}
+                                transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+                            />
+                            <motion.div
+                                className="absolute rounded-full border border-purple-300/20"
+                                style={{ width: 210, height: 210 }}
+                                animate={{ rotate: -360 }}
+                                transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+                            />
+
+                            {/* 구체 — 등장 wrapper */}
+                            <motion.div
+                                initial={{ scale: 0, opacity: 0 }}
+                                animate={{ scale: 1, opacity: 1 }}
+                                transition={{ duration: 0.5, ease: "easeOut" }}
+                            >
+                                {/* pulse inner */}
+                                <motion.div
+                                    className="relative rounded-full"
+                                    style={{
+                                        width: 176,
+                                        height: 176,
+                                        background: "radial-gradient(circle at 35% 35%, #e9d5ff, #7c3aed 40%, #1e1b4b 70%, #0a0618)",
+                                        boxShadow: "0 0 60px 20px rgba(139,92,246,0.35), inset 0 0 30px rgba(255,255,255,0.08)",
+                                    }}
+                                    animate={{ scale: [1, 1.07, 1], opacity: [0.9, 1, 0.9] }}
+                                    transition={{ duration: 0.8, repeat: Infinity, ease: "easeInOut" }}
+                                >
+                                    <div
+                                        className="absolute rounded-full bg-white/20"
+                                        style={{ width: 48, height: 32, top: 28, left: 32, filter: "blur(6px)" }}
+                                    />
+                                </motion.div>
+                            </motion.div>
+                        </div>
+
+                        <p className="text-violet-300/70 text-xs animate-pulse">
+                            {selectedCard?.nameKo} 카드의 기운을 읽는 중...
                         </p>
                     </motion.div>
                 )}
@@ -198,7 +289,7 @@ export default function DailyClient() {
                                 <div>
                                     <h4 className="font-bold text-lg mb-2">냥이의 조언</h4>
                                     <div className="leading-relaxed text-muted-foreground whitespace-pre-wrap">
-                                        {readingResult}
+                                        {readingResult || <span className="animate-pulse">조언을 불러오는 중이다냥...</span>}
                                     </div>
                                 </div>
                             </motion.div>

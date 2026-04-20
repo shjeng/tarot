@@ -58,9 +58,6 @@ export function Card({
                     <div className="w-16 h-16 rounded-full border-2 border-secondary/40 flex items-center justify-center">
                         <div className="w-10 h-10 rotate-45 border border-secondary/30" />
                     </div>
-                    <div className="absolute bottom-1 sm:bottom-2 md:bottom-4 text-secondary/40 text-[7px] sm:text-[9px] md:text-xs tracking-[0.05em] md:tracking-[0.2em] font-serif whitespace-nowrap">
-                        고양이 점술관
-                    </div>
                 </div>
 
                 {/* Card Front */}
