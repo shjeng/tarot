@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 import ReactMarkdown from "react-markdown";
 import {
   Cat, Star, Moon, ChevronDown,
-  Sparkles, Calendar, BookOpen, ArrowLeft
+  Sparkles, Calendar, BookOpen, ArrowLeft, Pencil,
 } from "lucide-react";
 import Link from "next/link";
 import type { User } from "@supabase/supabase-js";
@@ -30,6 +30,12 @@ interface History {
   request_data: RequestData;
   reading: string;
   created_at: string;
+}
+
+interface Profile {
+  nickname: string;
+  birth_date: string;
+  birth_time: string | null;
 }
 
 // 카드 이름으로 이미지 경로 조회
@@ -110,11 +116,13 @@ function HistoryCard({ item, index }: { item: History; index: number }) {
         </div>
 
         {/* 공유 버튼 + 펼치기 화살표 */}
-        <div className="flex-shrink-0 flex items-center gap-1 mt-0.5" onClick={(e) => e.stopPropagation()}>
-          <ShareButton
-            historyId={item.id}
-            variant="icon"
-          />
+        <div className="flex-shrink-0 flex items-center gap-1 mt-0.5">
+          <div onClick={(e) => e.stopPropagation()}>
+            <ShareButton
+              historyId={item.id}
+              variant="icon"
+            />
+          </div>
           <div className={`text-muted-foreground transition-transform duration-300 ${open ? "rotate-180" : ""}`}>
             <ChevronDown className="w-4 h-4" />
           </div>
@@ -207,6 +215,7 @@ export default function MyPage() {
   const supabase = useMemo(() => createClient(), []);
 
   const [user, setUser] = useState<User | null>(null);
+  const [profile, setProfile] = useState<Profile | null>(null);
   const [histories, setHistories] = useState<History[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -233,6 +242,13 @@ export default function MyPage() {
       setUser(session.user);
 
       try {
+        const { data: profileData } = await supabase
+          .from("profiles")
+          .select("nickname, birth_date, birth_time")
+          .eq("id", session.user.id)
+          .single();
+        if (profileData) setProfile(profileData);
+
         const data = await fetchHistories(0, session.access_token);
         setHistories(data.histories);
         setTotal(data.total);
@@ -307,9 +323,18 @@ export default function MyPage() {
 
           {/* 정보 */}
           <div className="flex-1 min-w-0 space-y-1">
-            <h1 className="text-lg font-serif font-bold truncate">
-              {user?.email?.split("@")?.[0]}
-            </h1>
+            <div className="flex items-center gap-1">
+              <h1 className="text-lg font-serif font-bold truncate min-w-0">
+                {profile?.nickname ?? user?.email?.split("@")?.[0]}
+              </h1>
+              <Link
+                href="/mypage/edit"
+                className="text-xs text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1 flex-shrink-0"
+              >
+                <Pencil className="w-3 h-3" />
+                정보 수정
+              </Link>
+            </div>
             <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
             <div className="flex items-center gap-1 text-xs text-muted-foreground">
               <Calendar className="w-3 h-3" />
