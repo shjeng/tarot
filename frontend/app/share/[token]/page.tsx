@@ -26,8 +26,7 @@ export async function generateMetadata(
 
   const baseUrl = "https://necessitycat.com";
   const pageUrl = `${baseUrl}/share/${token}`;
-  // app/opengraph-image.tsx 컨벤션으로 자동 생성되는 경로
-  const defaultImage = `${baseUrl}/opengraph-image`;
+  const defaultImage = `${baseUrl}/meta_image.png`;
 
   if (!data) {
     return {
