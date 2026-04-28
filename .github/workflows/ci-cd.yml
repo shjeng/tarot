@@ -128,8 +128,9 @@ jobs:
             cd /opt/tarot
 
             echo "=== 최신 코드 pull ==="
-            # origin/main의 최신 커밋을 VM으로 가져옴
-            git pull origin main
+            # 로컬 변경사항(예: package-lock.json)을 버리고 origin/main과 동기화
+            git fetch origin
+            git reset --hard origin/main
 
             echo "=== 백엔드 .env 생성 ==="
             # GitHub Secrets 값으로 백엔드 .env 파일을 매 배포마다 덮어씀
