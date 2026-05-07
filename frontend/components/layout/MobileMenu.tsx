@@ -58,6 +58,10 @@ export function MobileMenu({ isLoggedIn }: MobileMenuProps) {
                 className="px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-primary/10 hover:text-primary transition-colors">
                 고양이 타로 상담
               </Link>
+              <Link href="/cards" onClick={close}
+                className="px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-primary/10 hover:text-primary transition-colors">
+                타로 카드 도감
+              </Link>
               {isLoggedIn ? (
                 <>
                   <Link href="/mypage" onClick={close}

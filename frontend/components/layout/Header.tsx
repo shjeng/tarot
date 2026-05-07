@@ -28,6 +28,9 @@ export async function Header() {
           <Link href="/reading" className="text-sm font-medium transition-colors hover:text-primary">
             고양이 타로 상담
           </Link>
+          <Link href="/cards" className="text-sm font-medium transition-colors hover:text-primary">
+            타로 카드 도감
+          </Link>
           {user ? (
             <>
               <Link href="/mypage" className="text-sm font-medium transition-colors hover:text-primary">
